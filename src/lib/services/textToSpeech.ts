@@ -26,7 +26,7 @@ class TextToSpeechService {
 
 	async generateForeignLanguageAudio(section: Section): Promise<string> {
 		// Check if audio already exists
-		if (section.audioPath && await this.audioFileExists(section.audioPath)) {
+		if (section.audioPath && (await this.audioFileExists(section.audioPath))) {
 			return section.audioPath;
 		}
 
@@ -41,20 +41,20 @@ class TextToSpeechService {
 				input: { text: section.foreignText },
 				voice: {
 					languageCode: 'fr-FR', // This should be dynamic based on the language
-					name: 'fr-FR-Neural2-A', // Using Neural2 voice which is part of Chirp3
+					name: 'fr-FR-Neural2-A' // Using Neural2 voice which is part of Chirp3
 				},
-				audioConfig: { audioEncoding: 'MP3' as const },
+				audioConfig: { audioEncoding: 'MP3' as const }
 			};
 
 			// Make the request
 			const [response] = await this.client.synthesizeSpeech(request);
-			
+
 			// Write the audio content to file
 			await fs.writeFile(outputPath, response.audioContent as Buffer);
-			
+
 			// Update the database with the new audio path
 			await this.updateAudioPath(section.id, relativePath);
-			
+
 			return relativePath;
 		} catch (error) {
 			console.error('Error generating foreign language audio:', error);
@@ -64,7 +64,7 @@ class TextToSpeechService {
 
 	async generateEnglishAudio(section: Section): Promise<string> {
 		// Check if audio already exists
-		if (section.audioPath && await this.audioFileExists(section.audioPath)) {
+		if (section.audioPath && (await this.audioFileExists(section.audioPath))) {
 			return section.audioPath;
 		}
 
@@ -79,20 +79,20 @@ class TextToSpeechService {
 				input: { text: section.englishText },
 				voice: {
 					languageCode: 'en-US',
-					name: 'en-US-Neural2-F',
+					name: 'en-US-Neural2-F'
 				},
-				audioConfig: { audioEncoding: 'MP3' as const },
+				audioConfig: { audioEncoding: 'MP3' as const }
 			};
 
 			// Make the request
 			const [response] = await this.client.synthesizeSpeech(request);
-			
+
 			// Write the audio content to file
 			await fs.writeFile(outputPath, response.audioContent as Buffer);
-			
+
 			// Update the database with the new audio path
 			await this.updateAudioPath(section.id, relativePath);
-			
+
 			return relativePath;
 		} catch (error) {
 			console.error('Error generating English audio:', error);
@@ -116,7 +116,7 @@ class TextToSpeechService {
 		try {
 			await this.prisma.section.update({
 				where: { id: sectionId },
-				data: { audioPath },
+				data: { audioPath }
 			});
 		} catch (error) {
 			console.error('Error updating audio path in database:', error);
