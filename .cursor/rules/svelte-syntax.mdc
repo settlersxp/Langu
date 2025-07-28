@@ -1,0 +1,10 @@
+---
+description: 
+globs: *.svelte
+alwaysApply: false
+---
+Always use runes.
+Always use onclick instead of on:click.
+Always use onconsider instead of on:consider.
+Always use onfinalize instead of on:finalize.
+Always use hooks and interfaces.

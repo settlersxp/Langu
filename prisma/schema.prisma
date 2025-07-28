@@ -1,0 +1,27 @@
+// prisma/schema.prisma
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Deck {
+  id          Int       @id @default(autoincrement())
+  name        String
+  description String?
+  playCount   Int       @default(0)
+  sections    Section[]
+}
+
+model Section {
+  id           Int    @id @default(autoincrement())
+  deckId       Int
+  deck         Deck   @relation(fields: [deckId], references: [id], onDelete: Cascade)
+  foreignText  String
+  englishText  String
+  audioPath    String
+  position     Int
+}
