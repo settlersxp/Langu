@@ -1,9 +1,13 @@
 // See https://svelte.dev/docs/kit/types#app.d.ts
 // for information about these interfaces
+import type { TextToSpeechClient } from '@google-cloud/text-to-speech';
+
 declare global {
 	namespace App {
 		// interface Error {}
-		// interface Locals {}
+		interface Locals {
+			ttsClient: TextToSpeechClient | null;
+		}
 		// interface PageData {}
 		// interface PageState {}
 		// interface Platform {}
