@@ -9,6 +9,9 @@ node_modules
 /build
 /creds
 
+# Any prisma database
+/prisma/*.db
+
 # OS
 .DS_Store
 Thumbs.db
