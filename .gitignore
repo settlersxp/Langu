@@ -10,7 +10,7 @@ node_modules
 /creds
 
 # Any prisma database
-/prisma/*.db
+prisma/*.db
 
 # OS
 .DS_Store

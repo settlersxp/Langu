@@ -1,12 +1,25 @@
 <script lang="ts">
 	import type { Deck } from '$lib/database/schema';
-
+	import EditDeckComponent from './EditDeckComponent.svelte';
 	interface Props {
 		deck: Deck;
 		onRemove: () => void;
+		onUpdate: (updatedDeck: Deck) => void;
 	}
 
-	let { deck, onRemove }: Props = $props();
+	let { deck, onRemove, onUpdate }: Props = $props();
+
+	let editDeck = $state(false);
+
+	function handleUpdate(updatedDeck: Deck) {
+		deck = updatedDeck;
+		onUpdate(updatedDeck);
+		editDeck = false;
+	}
+
+	function handleClose() {
+		editDeck = false;
+	}
 </script>
 
 <div class="deck-card">
@@ -17,9 +30,18 @@
 	<p class="description">{deck.description || 'No description'}</p>
 	<div class="deck-footer">
 		<span class="play-count">Played {deck.playCount} times</span>
-		<a href="/decks/{deck.id}" class="view-btn">View</a>
+		<a href="/decks/{deck.id}" class="view-btn">Open</a>
+		<button class="edit-btn" onclick={() => editDeck = true}>Edit</button>
 	</div>
 </div>
+
+{#if editDeck}
+	<EditDeckComponent 
+		deck={deck} 
+		update={handleUpdate}
+		close={handleClose}
+	/>
+{/if}
 
 <style>
 	.deck-card {
@@ -91,5 +113,19 @@
 
 	.view-btn:hover {
 		background-color: #45a049;
+	}
+
+	.edit-btn {
+		background-color: #2196f3;
+		color: white;
+		padding: 0.3rem 0.6rem;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-weight: 500;
+	}
+
+	.edit-btn:hover {
+		background-color: #0b7dda;
 	}
 </style>

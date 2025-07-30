@@ -13,36 +13,42 @@
 	import DeckComponent from '$lib/components/DeckComponent.svelte';
 	import VoiceSelector from '$lib/components/VoiceSelector.svelte';
 	import { selectedVoice } from '$lib/stores/voiceStore';
+	import { onMount } from 'svelte';
 
-	let decks: Deck[] = $state([
-		{
-			id: 1,
-			name: 'English Vocabulary',
-			description: 'Basic English vocabulary cards',
-			playCount: 0
-		},
-		{ id: 2, name: 'Spanish Verbs', description: 'Common Spanish verb conjugations', playCount: 0 },
-		{ id: 3, name: 'French Phrases', description: 'Everyday French expressions', playCount: 0 }
-	]);
+	let decks: Deck[] = $state([]);
 
 	const flipDurationMs = 200;
 	let showVoiceSelector = $state(false);
 
+	onMount(async () => {
+		const response = await fetch('/api/decks');
+		const data = await response.json();
+		decks = data;
+	});
+
 	function addDeck() {
-		const newId = Math.max(0, ...decks.map((d) => d.id)) + 1;
 		decks = [
 			...decks,
 			{
-				id: newId,
+				id: 0,
 				name: 'New Deck',
 				description: 'Click to edit',
-				playCount: 0
+				playCount: 0,
+				languageCode: 'de',
+				languageName: 'German'
 			}
 		];
 	}
 
-	function removeDeck(deckId: number) {
-		decks = decks.filter((deck) => deck.id !== deckId);
+	async function removeDeck(deckId: number) {
+		const response = await fetch(`/api/decks/${deckId}`, {
+			method: 'DELETE'
+		});
+		if (response.ok) {
+			decks = decks.filter((deck) => deck.id !== deckId);
+		} else {
+			console.error('Failed to remove deck');
+		}
 	}
 
 	function handleDndEvent(e: CustomEvent<{ items: Deck[] }>) {
@@ -51,6 +57,10 @@
 
 	function toggleVoiceSelector() {
 		showVoiceSelector = !showVoiceSelector;
+	}
+
+	function handleUpdate(updatedDeck: Deck) {
+		decks = decks.map((deck) => deck.id === updatedDeck.id ? updatedDeck : deck);
 	}
 </script>
 
@@ -83,7 +93,11 @@
 		>
 			{#each decks as deck (deck.id)}
 				<div animate:flip={{ duration: flipDurationMs }}>
-					<DeckComponent {deck} onRemove={() => removeDeck(deck.id)} />
+					<DeckComponent 
+						{deck} 
+						onRemove={() => removeDeck(deck.id)} 
+						onUpdate={handleUpdate} 
+					/>
 				</div>
 			{/each}
 		</section>
