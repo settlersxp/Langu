@@ -11,6 +11,8 @@
 	import { flip } from 'svelte/animate';
 	import type { Deck } from '$lib/database/schema';
 	import DeckComponent from '$lib/components/DeckComponent.svelte';
+	import VoiceSelector from '$lib/components/VoiceSelector.svelte';
+	import { selectedVoice } from '$lib/stores/voiceStore';
 
 	let decks: Deck[] = $state([
 		{
@@ -24,6 +26,7 @@
 	]);
 
 	const flipDurationMs = 200;
+	let showVoiceSelector = $state(false);
 
 	function addDeck() {
 		const newId = Math.max(0, ...decks.map((d) => d.id)) + 1;
@@ -45,45 +48,106 @@
 	function handleDndEvent(e: CustomEvent<{ items: Deck[] }>) {
 		decks = e.detail.items;
 	}
+
+	function toggleVoiceSelector() {
+		showVoiceSelector = !showVoiceSelector;
+	}
 </script>
 
-<div class="deck-management">
-	<h1>My Decks</h1>
-	<button onclick={addDeck}>Add Deck</button>
-
-	<section
-		use:dndzone={{ items: decks, flipDurationMs, type: 'decks' }}
-		onconsider={handleDndEvent}
-		onfinalize={handleDndEvent}
-		class="decks-container"
-	>
-		{#each decks as deck (deck.id)}
-			<div animate:flip={{ duration: flipDurationMs }}>
-				<DeckComponent {deck} onRemove={() => removeDeck(deck.id)} />
+<div class="main-container">
+	<div class="deck-management">
+		<div class="header-section">
+			<h1>My Decks</h1>
+			<div class="action-buttons">
+				<button onclick={addDeck} class="add-button">Add Deck</button>
+				<button onclick={toggleVoiceSelector} class="voice-button">
+					{showVoiceSelector ? 'Hide Voice Selector' : 'Select Voice'}
+					{#if $selectedVoice}
+						<span class="selected-indicator">✓</span>
+					{/if}
+				</button>
 			</div>
-		{/each}
-	</section>
+		</div>
+
+		{#if showVoiceSelector}
+			<div class="voice-selector-container">
+				<VoiceSelector />
+			</div>
+		{/if}
+
+		<section
+			use:dndzone={{ items: decks, flipDurationMs, type: 'decks' }}
+			onconsider={handleDndEvent}
+			onfinalize={handleDndEvent}
+			class="decks-container"
+		>
+			{#each decks as deck (deck.id)}
+				<div animate:flip={{ duration: flipDurationMs }}>
+					<DeckComponent {deck} onRemove={() => removeDeck(deck.id)} />
+				</div>
+			{/each}
+		</section>
+	</div>
 </div>
 
 <style>
-	.deck-management {
+	.main-container {
 		padding: 1rem;
+	}
+
+	.deck-management {
 		max-width: 800px;
 		margin: 0 auto;
 	}
 
+	.header-section {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.action-buttons {
+		display: flex;
+		gap: 0.5rem;
+	}
+
 	button {
-		background-color: #4caf50;
-		color: white;
 		padding: 10px 15px;
 		border: none;
 		border-radius: 4px;
 		cursor: pointer;
-		margin-bottom: 1rem;
 	}
 
-	button:hover {
+	.add-button {
+		background-color: #4caf50;
+		color: white;
+	}
+
+	.add-button:hover {
 		background-color: #45a049;
+	}
+
+	.voice-button {
+		background-color: #2196f3;
+		color: white;
+		position: relative;
+	}
+
+	.voice-button:hover {
+		background-color: #0b7dda;
+	}
+
+	.selected-indicator {
+		margin-left: 5px;
+		font-weight: bold;
+	}
+
+	.voice-selector-container {
+		margin-bottom: 2rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		background-color: white;
 	}
 
 	.decks-container {
