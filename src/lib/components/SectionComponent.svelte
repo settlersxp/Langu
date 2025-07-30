@@ -11,7 +11,7 @@
 	interface Props {
 		section: Section;
 		onRemove: () => void;
-		onPlay: () => void;
+		onPlay: (language: 'foreign' | 'english' | 'both') => void;
 	}
 
 	let { section, onRemove, onPlay }: Props = $props();
@@ -49,12 +49,14 @@
 			
 			// Check if foreign text changed - this would require audio cache invalidation
 			const foreignTextChanged = editedForeignText !== section.foreignText;
+			const englishTextChanged = editedEnglishText !== section.englishText;
 			
 			// Prepare update data
 			const updateData = {
 				foreignText: editedForeignText,
 				englishText: editedEnglishText,
-				invalidateCache: foreignTextChanged
+				invalidateForeignCache: foreignTextChanged,
+				invalidateEnglishCache: englishTextChanged
 			};
 			
 			// Send update to API
@@ -121,13 +123,22 @@
 			</div>
 		{:else}
 			<div class="text-container">
-				<div class="foreign-text">{section.foreignText}</div>
-				<div class="english-text">{section.englishText}</div>
+				<div class="foreign-text">
+					{section.foreignText}
+					<button class="play-btn foreign" onclick={() => onPlay('foreign')} title="Play foreign text">▶</button>
+				</div>
+				<div class="english-text">
+					{section.englishText}
+					<button class="play-btn english" onclick={() => onPlay('english')} title="Play English text">▶</button>
+				</div>
 			</div>
 			<div class="section-controls">
-				<button class="edit-btn" onclick={startEdit}>✎</button>
-				<button class="play-btn" onclick={onPlay}>▶</button>
-				<button class="remove-btn" onclick={onRemove}>×</button>
+				<button class="play-both-btn" onclick={() => onPlay('both')} title="Play both languages in sequence">
+					<span class="play-icon">▶</span>
+					<span class="play-icon">▶</span>
+				</button>
+				<button class="edit-btn" onclick={startEdit} title="Edit section">✎</button>
+				<button class="remove-btn" onclick={onRemove} title="Remove section">×</button>
 			</div>
 		{/if}
 	</div>
@@ -165,11 +176,17 @@
 		font-size: 1.1rem;
 		font-weight: 500;
 		margin-bottom: 0.5rem;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 	}
 
 	.english-text {
 		font-size: 0.9rem;
 		color: #666;
+		display: flex;
+		align-items: center;
+		gap: 0.5rem;
 	}
 
 	.section-controls {
@@ -179,7 +196,8 @@
 
 	.play-btn,
 	.remove-btn,
-	.edit-btn {
+	.edit-btn,
+	.play-both-btn {
 		background: none;
 		border: none;
 		cursor: pointer;
@@ -196,10 +214,48 @@
 	.play-btn {
 		background-color: #4caf50;
 		color: white;
+		font-size: 0.8rem;
+		width: 1.5rem;
+		height: 1.5rem;
 	}
 
 	.play-btn:hover {
 		background-color: #45a049;
+	}
+	
+	.play-btn.english {
+		background-color: #2196f3;
+	}
+	
+	.play-btn.english:hover {
+		background-color: #0b7dda;
+	}
+	
+	.play-both-btn {
+		background: linear-gradient(135deg, #4caf50 0%, #4caf50 49%, #2196f3 51%, #2196f3 100%);
+		color: white;
+		width: 2.5rem;
+		height: 2.5rem;
+		position: relative;
+	}
+	
+	.play-both-btn:hover {
+		opacity: 0.9;
+	}
+	
+	.play-both-btn .play-icon {
+		position: absolute;
+		font-size: 0.8rem;
+	}
+	
+	.play-both-btn .play-icon:first-child {
+		top: 0.7rem;
+		left: 0.7rem;
+	}
+	
+	.play-both-btn .play-icon:last-child {
+		bottom: 0.7rem;
+		right: 0.7rem;
 	}
 	
 	.edit-btn {

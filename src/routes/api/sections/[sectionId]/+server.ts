@@ -19,7 +19,7 @@ import type { RequestHandler } from './$types';
 import path from 'path';
 import { promises as fsPromises } from 'fs';
 import { PrismaClient } from '@prisma/client';
-import { selectedVoiceForeign } from '$lib/stores/voiceStore';
+import { selectedVoiceForeign, selectedVoiceEnglish } from '$lib/stores/voiceStore';
 import { get } from 'svelte/store';
 import { protos } from '@google-cloud/text-to-speech';
 
@@ -69,11 +69,18 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
       throw error(404, 'Section not found');
     }
     
-    // Get the language code from the deck
-    const languageCode = section.deck.languageCode;
+    // Parse request body to get language preference and voice
+    const body = await request.json().catch(() => ({}));
+    const language = body.language || 'foreign'; // Default to foreign if not specified
     
-    // Create audio file path
-    const audioFileName = `${sectionId}_${languageCode}.mp3`;
+    // Get the text to synthesize based on language
+    const textToSynthesize = language === 'foreign' ? section.foreignText : section.englishText;
+    
+    // Get the language code - for foreign text use the deck's language code, for English use 'en-US'
+    const languageCode = language === 'foreign' ? section.deck.languageCode : 'en-US';
+    
+    // Create audio file path with language indicator
+    const audioFileName = `${sectionId}_${language}_${languageCode}.mp3`;
     const audioCachePath = path.join(process.cwd(), 'audio-cache');
     const audioFilePath = path.join(audioCachePath, audioFileName);
     
@@ -92,18 +99,17 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
         throw error(500, 'TTS client not initialized');
       }
       
-      // Get the voice from the request or use the selected voice found in the browser's cache under the key "selectedVoiceForeign"
-      const body = await request.json().catch(() => ({}));
-      const voice = body.voice || get(selectedVoiceForeign);
-      console.log('voice', voice);
+      // Get the voice from the request or use the selected voice found in the browser's cache
+      const voice = body.voice || get(language === 'foreign' ? selectedVoiceForeign : selectedVoiceEnglish);
+      console.log(`Using ${language} voice:`, voice);
       
       if (!voice) {
-        throw error(400, 'No voice selected');
+        throw error(400, `No ${language} voice selected`);
       }
       
       // Set up the request
       const ttsRequest = {
-        input: { text: section.foreignText },
+        input: { text: textToSynthesize },
         voice: {
           languageCode: voice.languageCodes[0],
           name: voice.name,
@@ -211,7 +217,7 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
     
     // Parse the request body
     const body = await request.json();
-    const { foreignText, englishText, invalidateCache } = body;
+    const { foreignText, englishText, invalidateForeignCache, invalidateEnglishCache } = body;
     
     if (!foreignText || !englishText) {
       throw error(400, 'Foreign text and English text are required');
@@ -226,11 +232,11 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
       }
     });
     
-    // If cache invalidation is requested (because foreign text changed), delete the audio file
-    if (invalidateCache) {
+    // If foreign cache invalidation is requested, delete the foreign audio file
+    if (invalidateForeignCache) {
       try {
         const languageCode = currentSection.deck.languageCode;
-        const audioFileName = `${sectionId}_${languageCode}.mp3`;
+        const audioFileName = `${sectionId}_foreign_${languageCode}.mp3`;
         const audioCachePath = path.join(process.cwd(), 'audio-cache');
         const audioFilePath = path.join(audioCachePath, audioFileName);
         
@@ -238,10 +244,41 @@ export const PATCH: RequestHandler = async ({ params, request }) => {
         await fsPromises.access(audioFilePath);
         await fsPromises.unlink(audioFilePath);
         
-        console.log(`Invalidated audio cache for section ${sectionId}`);
+        console.log(`Invalidated foreign audio cache for section ${sectionId}`);
       } catch (err) {
         // If the file doesn't exist or can't be deleted, just log it
-        console.log(`No audio cache to invalidate for section ${sectionId} or error deleting it`);
+        console.log(`No foreign audio cache to invalidate for section ${sectionId} or error deleting it`);
+      }
+      
+      // Also try to delete the old format audio file (for backward compatibility)
+      try {
+        const languageCode = currentSection.deck.languageCode;
+        const audioFileName = `${sectionId}_${languageCode}.mp3`;
+        const audioCachePath = path.join(process.cwd(), 'audio-cache');
+        const audioFilePath = path.join(audioCachePath, audioFileName);
+        
+        await fsPromises.access(audioFilePath);
+        await fsPromises.unlink(audioFilePath);
+      } catch (err) {
+        // Ignore errors for old format
+      }
+    }
+    
+    // If English cache invalidation is requested, delete the English audio file
+    if (invalidateEnglishCache) {
+      try {
+        const audioFileName = `${sectionId}_english_en-US.mp3`;
+        const audioCachePath = path.join(process.cwd(), 'audio-cache');
+        const audioFilePath = path.join(audioCachePath, audioFileName);
+        
+        // Check if file exists and delete it
+        await fsPromises.access(audioFilePath);
+        await fsPromises.unlink(audioFilePath);
+        
+        console.log(`Invalidated English audio cache for section ${sectionId}`);
+      } catch (err) {
+        // If the file doesn't exist or can't be deleted, just log it
+        console.log(`No English audio cache to invalidate for section ${sectionId} or error deleting it`);
       }
     }
     
@@ -263,7 +300,8 @@ export const DELETE: RequestHandler = async ({ params }) => {
     
     // Get the section to check if it exists and to get its deck ID
     const section = await prisma.section.findUnique({
-      where: { id: sectionId }
+      where: { id: sectionId },
+      include: { deck: true }
     });
     
     if (!section) {
@@ -275,26 +313,46 @@ export const DELETE: RequestHandler = async ({ params }) => {
       where: { id: sectionId }
     });
     
-    // Try to delete the audio file if it exists
+    // Try to delete both foreign and English audio files
     try {
-      // Get the deck to get the language code
-      const deck = await prisma.deck.findUnique({
-        where: { id: section.deckId }
-      });
+      const languageCode = section.deck.languageCode;
+      const audioCachePath = path.join(process.cwd(), 'audio-cache');
       
-      if (deck) {
-        const audioFileName = `${sectionId}_${deck.languageCode}.mp3`;
-        const audioCachePath = path.join(process.cwd(), 'audio-cache');
-        const audioFilePath = path.join(audioCachePath, audioFileName);
-        
-        // Check if file exists and delete it
-        await fsPromises.access(audioFilePath);
-        await fsPromises.unlink(audioFilePath);
+      // Delete foreign audio file
+      const foreignAudioFileName = `${sectionId}_foreign_${languageCode}.mp3`;
+      const foreignAudioFilePath = path.join(audioCachePath, foreignAudioFileName);
+      
+      try {
+        await fsPromises.access(foreignAudioFilePath);
+        await fsPromises.unlink(foreignAudioFilePath);
+      } catch (e) {
+        // Ignore if file doesn't exist
+      }
+      
+      // Delete English audio file
+      const englishAudioFileName = `${sectionId}_english_en-US.mp3`;
+      const englishAudioFilePath = path.join(audioCachePath, englishAudioFileName);
+      
+      try {
+        await fsPromises.access(englishAudioFilePath);
+        await fsPromises.unlink(englishAudioFilePath);
+      } catch (e) {
+        // Ignore if file doesn't exist
+      }
+      
+      // Try to delete old format audio file (for backward compatibility)
+      const oldFormatAudioFileName = `${sectionId}_${languageCode}.mp3`;
+      const oldFormatAudioFilePath = path.join(audioCachePath, oldFormatAudioFileName);
+      
+      try {
+        await fsPromises.access(oldFormatAudioFilePath);
+        await fsPromises.unlink(oldFormatAudioFilePath);
+      } catch (e) {
+        // Ignore if file doesn't exist
       }
     } catch (err) {
-      // Ignore errors when trying to delete the audio file
-      // The section is already deleted from the database
-      console.log('Audio file not found or could not be deleted');
+      // Ignore errors when trying to delete audio files
+      console.log('Error deleting audio files:', err);
     }
     
     // Update positions of remaining sections in the deck

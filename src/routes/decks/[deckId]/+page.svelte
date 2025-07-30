@@ -15,6 +15,7 @@
 	import { onMount } from 'svelte';
 	import type { Section, Deck } from '$lib/database/schema';
 	import SectionComponent from '$lib/components/SectionComponent.svelte';
+	import type { Voice } from '$lib/models/language';
 
 	// State variables
 	let sections: Section[] = $state([]);
@@ -22,12 +23,19 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let deckId: number;
-	let selectedVoiceForeign: JSON | null = $state(null);
+	let selectedVoiceForeign: Voice | null = $state(null);
+	let selectedVoiceEnglish: Voice | null = $state(null);
+	let isPlayingAll = $state(false);
 
 	// Get the deck ID from the URL parameter and fetch data
 	onMount(async () => {
-		// Get the selected voice from the browser's cache under the key "selectedVoiceForeign"
-		selectedVoiceForeign = JSON.parse(localStorage.getItem('selectedVoiceForeign') || '{}');
+		// Get the selected voices from the browser's cache
+		try {
+			selectedVoiceForeign = JSON.parse(localStorage.getItem('selectedVoiceForeign') || 'null');
+			selectedVoiceEnglish = JSON.parse(localStorage.getItem('selectedVoiceEnglish') || 'null');
+		} catch (e) {
+			console.error('Error parsing voice data from localStorage:', e);
+		}
 		
 		try {
 			// Get deck ID from URL
@@ -144,89 +152,197 @@
 		}
 	}
 
-	async function playSection(section: Section) {
+	async function playSection(section: Section, language: 'foreign' | 'english' | 'both') {
 		try {
-			// Play audio for specific section using the API. 
-			const response = await fetch(`/api/sections/${section.id}`, {
+			if (language === 'both') {
+				await playBothLanguages(section);
+			} else {
+				// Select the appropriate voice based on language
+				const voice = language === 'foreign' ? selectedVoiceForeign : selectedVoiceEnglish;
+				
+				if (!voice) {
+					throw new Error(`No ${language} voice selected. Please select a voice in the Voice Selector.`);
+				}
+				
+				// Play audio for specific section using the API
+				const response = await fetch(`/api/sections/${section.id}`, {
+					method: 'POST',
+					headers: {
+						'Content-Type': 'application/json'
+					},
+					body: JSON.stringify({ 
+						voice,
+						language
+					})
+				});
+				
+				if (!response.ok) {
+					throw new Error(`Failed to play audio: ${response.statusText}`);
+				}
+				
+				// Create an audio element and play the returned audio
+				const audioBlob = await response.blob();
+				const audioUrl = URL.createObjectURL(audioBlob);
+				const audio = new Audio(audioUrl);
+				
+				await new Promise<void>((resolve) => {
+					audio.onended = () => {
+						URL.revokeObjectURL(audioUrl);
+						resolve();
+					};
+					
+					audio.onerror = () => {
+						URL.revokeObjectURL(audioUrl);
+						resolve();
+					};
+					
+					audio.play().catch(() => {
+						URL.revokeObjectURL(audioUrl);
+						resolve();
+					});
+				});
+			}
+		} catch (err) {
+			console.error('Error playing section:', err);
+			alert(err instanceof Error ? err.message : 'Failed to play audio');
+		}
+	}
+	
+	// Play both languages in sequence with a pause between them
+	async function playBothLanguages(section: Section) {
+		if (!selectedVoiceForeign || !selectedVoiceEnglish) {
+			alert('Both foreign and English voices must be selected in the Voice Selector.');
+			return;
+		}
+		
+		try {
+			// Step 1: Play foreign language
+			const foreignResponse = await fetch(`/api/sections/${section.id}`, {
 				method: 'POST',
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ voice: selectedVoiceForeign })
+				body: JSON.stringify({ 
+					voice: selectedVoiceForeign,
+					language: 'foreign'
+				})
 			});
 			
-			if (!response.ok) {
-				throw new Error(`Failed to play audio: ${response.statusText}`);
+			if (!foreignResponse.ok) {
+				throw new Error(`Failed to play foreign audio: ${foreignResponse.statusText}`);
 			}
 			
-			// Create an audio element and play the returned audio
-			const audioBlob = await response.blob();
-			const audioUrl = URL.createObjectURL(audioBlob);
-			const audio = new Audio(audioUrl);
-			audio.play();
+			// Create audio element for foreign language
+			const foreignBlob = await foreignResponse.blob();
+			const foreignUrl = URL.createObjectURL(foreignBlob);
+			const foreignAudio = new Audio(foreignUrl);
 			
-			// Clean up URL object after playback
-			audio.onended = () => {
-				URL.revokeObjectURL(audioUrl);
-			};
+			// Play foreign audio and wait for it to complete
+			let foreignDuration = 0;
+			await new Promise<void>((resolve) => {
+				foreignAudio.onloadedmetadata = () => {
+					foreignDuration = foreignAudio.duration;
+				};
+				
+				foreignAudio.onended = () => {
+					URL.revokeObjectURL(foreignUrl);
+					resolve();
+				};
+				
+				foreignAudio.onerror = () => {
+					URL.revokeObjectURL(foreignUrl);
+					resolve();
+				};
+				
+				foreignAudio.play().catch(() => {
+					URL.revokeObjectURL(foreignUrl);
+					resolve();
+				});
+			});
+			
+			// Step 2: Add a pause (1.5x the duration of the foreign audio or at least 1.5 seconds)
+			const pauseDuration = Math.max(foreignDuration * 1.5, 1.5) * 1000;
+			await new Promise(resolve => setTimeout(resolve, pauseDuration));
+			
+			// Step 3: Play English language
+			const englishResponse = await fetch(`/api/sections/${section.id}`, {
+				method: 'POST',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify({ 
+					voice: selectedVoiceEnglish,
+					language: 'english'
+				})
+			});
+			
+			if (!englishResponse.ok) {
+				throw new Error(`Failed to play English audio: ${englishResponse.statusText}`);
+			}
+			
+			// Create audio element for English language
+			const englishBlob = await englishResponse.blob();
+			const englishUrl = URL.createObjectURL(englishBlob);
+			const englishAudio = new Audio(englishUrl);
+			
+			// Play English audio and wait for it to complete
+			await new Promise<void>((resolve) => {
+				englishAudio.onended = () => {
+					URL.revokeObjectURL(englishUrl);
+					resolve();
+				};
+				
+				englishAudio.onerror = () => {
+					URL.revokeObjectURL(englishUrl);
+					resolve();
+				};
+				
+				englishAudio.play().catch(() => {
+					URL.revokeObjectURL(englishUrl);
+					resolve();
+				});
+			});
+			
 		} catch (err) {
-			console.error('Error playing section:', err);
-			alert('Failed to play audio');
+			console.error('Error playing both languages:', err);
+			throw err;
 		}
 	}
 
-	async function playAllSections() {
-		// Play sections in sequence
+	async function playAllSections(language: 'foreign' | 'english' | 'both' = 'both') {
+		if (isPlayingAll) return; // Prevent multiple simultaneous playback
+		
 		try {
+			isPlayingAll = true;
+			
+			// Check for required voices
+			if (language === 'foreign' || language === 'both') {
+				if (!selectedVoiceForeign) {
+					throw new Error('No foreign voice selected. Please select a voice in the Voice Selector.');
+				}
+			}
+			
+			if (language === 'english' || language === 'both') {
+				if (!selectedVoiceEnglish) {
+					throw new Error('No English voice selected. Please select a voice in the Voice Selector.');
+				}
+			}
+			
 			// Sort sections by position to ensure correct order
 			const sortedSections = [...sections].sort((a, b) => a.position - b.position);
 			
 			// Play each section with a delay between them
 			for (const section of sortedSections) {
-				await new Promise<void>((resolve) => {
-					// Play the current section
-					fetch(`/api/sections/${section.id}`, { method: 'POST',
-						headers: {
-							'Content-Type': 'application/json'
-						},
-						body: JSON.stringify({ voice: selectedVoiceForeign })
-					})
-						.then(response => {
-							if (!response.ok) {
-								throw new Error(`Failed to play audio: ${response.statusText}`);
-							}
-							return response.blob();
-						})
-						.then(audioBlob => {
-							const audioUrl = URL.createObjectURL(audioBlob);
-							const audio = new Audio(audioUrl);
-							
-							// When audio ends, resolve promise and move to next section
-							audio.onended = () => {
-								URL.revokeObjectURL(audioUrl);
-								resolve();
-							};
-							
-							// If audio fails to play, still move on
-							audio.onerror = () => {
-								URL.revokeObjectURL(audioUrl);
-								resolve();
-							};
-							
-							audio.play();
-						})
-						.catch(err => {
-							console.error(`Error playing section ${section.id}:`, err);
-							resolve(); // Continue with next section even if this one fails
-						});
-				});
+				await playSection(section, language);
 				
-				// Add a small pause between sections
-				await new Promise(resolve => setTimeout(resolve, 500));
+				// Add a pause between sections
+				await new Promise(resolve => setTimeout(resolve, 1000));
 			}
 		} catch (err) {
 			console.error('Error playing all sections:', err);
-			alert('Failed to play all sections');
+			alert(err instanceof Error ? err.message : 'Failed to play all sections');
+		} finally {
+			isPlayingAll = false;
 		}
 	}
 </script>
@@ -242,7 +358,32 @@
 
 		<div class="section-management">
 			<button onclick={addSection}>Add Section</button>
-			<button onclick={playAllSections}>Play All</button>
+			<div class="play-controls">
+				<button 
+					class="play-all-btn" 
+					onclick={() => playAllSections('both')}
+					disabled={isPlayingAll}
+					title="Play all sections with both languages in sequence"
+				>
+					{isPlayingAll ? 'Playing...' : 'Play All'}
+				</button>
+				<div class="language-buttons">
+					<button 
+						onclick={() => playAllSections('foreign')}
+						disabled={isPlayingAll}
+						class="foreign"
+					>
+						Foreign Only
+					</button>
+					<button 
+						onclick={() => playAllSections('english')}
+						disabled={isPlayingAll}
+						class="english"
+					>
+						English Only
+					</button>
+				</div>
+			</div>
 
 			<div
 				use:dndzone={{ items: sections, flipDurationMs: 300 }}
@@ -255,7 +396,7 @@
 						<SectionComponent
 							{section}
 							onRemove={() => removeSection(section.id)}
-							onPlay={() => playSection(section)}
+							onPlay={(language) => playSection(section, language)}
 						/>
 					</div>
 				{/each}
@@ -294,6 +435,47 @@
 		flex-direction: column;
 		gap: 1rem;
 	}
+	
+	.play-controls {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+		margin-top: 0.5rem;
+	}
+	
+	.play-all-btn {
+		background: linear-gradient(135deg, #4caf50 0%, #4caf50 49%, #2196f3 51%, #2196f3 100%);
+		font-weight: bold;
+		font-size: 1.1rem;
+		padding: 0.7rem 1rem;
+	}
+	
+	.language-buttons {
+		display: flex;
+		gap: 0.5rem;
+	}
+	
+	.language-buttons button {
+		flex: 1;
+		font-size: 0.9rem;
+		padding: 0.5rem;
+	}
+	
+	.language-buttons button.foreign {
+		background-color: #4caf50;
+	}
+	
+	.language-buttons button.foreign:hover:not(:disabled) {
+		background-color: #45a049;
+	}
+	
+	.language-buttons button.english {
+		background-color: #2196f3;
+	}
+	
+	.language-buttons button.english:hover:not(:disabled) {
+		background-color: #0b7dda;
+	}
 
 	button {
 		padding: 0.5rem 1rem;
@@ -306,8 +488,13 @@
 		margin-right: 0.5rem;
 	}
 
-	button:hover {
+	button:hover:not(:disabled) {
 		background-color: #2980b9;
+	}
+	
+	button:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
 	}
 
 	.sections-container {
