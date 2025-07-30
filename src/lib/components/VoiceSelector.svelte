@@ -1,6 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
-  import { selectedVoice } from '$lib/stores/voiceStore';
+  import { selectedVoiceForeign, selectedVoiceEnglish } from '$lib/stores/voiceStore';
   import type { Voice } from '$lib/models/language';
 
   let voices: Voice[] = $state([]);
@@ -18,6 +18,9 @@
   let testingVoice = $state(false);
   let audioSrc = $state<string | null>(null);
   let audioElement = $state<HTMLAudioElement | null>(null);
+
+  // Voice selection mode
+  let selectionMode = $state<'foreign' | 'english'>('foreign');
 
   // Unique language codes for dropdown
   let uniqueLanguageCodes = $state<string[]>([]);
@@ -69,7 +72,11 @@
   }
 
   function selectVoice(voice: Voice) {
-    selectedVoice.set(voice);
+    if (selectionMode === 'foreign') {
+      selectedVoiceForeign.set(voice);
+    } else {
+      selectedVoiceEnglish.set(voice);
+    }
   }
 
   function clearFilters() {
@@ -78,8 +85,20 @@
     genderFilter = '';
   }
 
+  function switchMode(mode: 'foreign' | 'english') {
+    selectionMode = mode;
+    
+    // Update test text based on selected mode
+    if (mode === 'foreign') {
+      testText = 'Hallo, dies ist ein Test für die ausgewählte Stimme.';
+    } else {
+      testText = 'Hello, this is a test for the selected voice.';
+    }
+  }
+
   async function testVoice() {
-    if (!$selectedVoice) return;
+    const selectedVoice = selectionMode === 'foreign' ? $selectedVoiceForeign : $selectedVoiceEnglish;
+    if (!selectedVoice) return;
     
     testingVoice = true;
     
@@ -91,7 +110,7 @@
         },
         body: JSON.stringify({
           text: testText,
-          voice: $selectedVoice
+          voice: selectedVoice
         })
       });
       
@@ -123,6 +142,21 @@
 
 <div class="voice-selector">
   <h2>Voice Selector</h2>
+  
+  <div class="mode-selector">
+    <button 
+      class:active={selectionMode === 'foreign'} 
+      onclick={() => switchMode('foreign')}
+    >
+      Foreign Language Voice
+    </button>
+    <button 
+      class:active={selectionMode === 'english'} 
+      onclick={() => switchMode('english')}
+    >
+      English Voice
+    </button>
+  </div>
   
   {#if loading}
     <div class="loading">Loading voices...</div>
@@ -171,7 +205,10 @@
       {#each filteredVoices as voice (voice.name)}
         <button 
           class="voice-item" 
-          class:selected={$selectedVoice?.name === voice.name}
+          class:selected={
+            (selectionMode === 'foreign' && $selectedVoiceForeign?.name === voice.name) || 
+            (selectionMode === 'english' && $selectedVoiceEnglish?.name === voice.name)
+          }
           onclick={() => selectVoice(voice)}
         >
           <div class="voice-name">{voice.name}</div>
@@ -188,41 +225,83 @@
     {/if}
   {/if}
   
-  {#if $selectedVoice}
-    <div class="selected-voice">
-      <h3>Selected Voice</h3>
-      <div class="voice-name">{$selectedVoice.name}</div>
-      <div class="voice-details">
-        <span>Language: {$selectedVoice.languageCodes.join(', ')}</span>
-        <span>Gender: {$selectedVoice.ssmlGender}</span>
-      </div>
-      
-      <div class="voice-test">
-        <h4>Test Voice</h4>
-        <div class="test-controls">
-          <input 
-            type="text" 
-            bind:value={testText} 
-            placeholder="Enter text to test voice" 
-            class="test-input"
-          />
-          <button 
-            onclick={testVoice} 
-            class="test-button"
-            disabled={testingVoice || !testText}
-          >
-            {testingVoice ? 'Testing...' : 'Test Voice'}
-          </button>
+  <div class="selected-voices">
+    {#if $selectedVoiceForeign}
+      <div class="selected-voice">
+        <h3>Selected Foreign Voice</h3>
+        <div class="voice-name">{$selectedVoiceForeign.name}</div>
+        <div class="voice-details">
+          <span>Language: {$selectedVoiceForeign.languageCodes.join(', ')}</span>
+          <span>Gender: {$selectedVoiceForeign.ssmlGender}</span>
         </div>
         
-        {#if audioSrc}
-          <div class="audio-player">
-            <audio bind:this={audioElement} controls src={audioSrc}></audio>
+        {#if selectionMode === 'foreign'}
+          <div class="voice-test">
+            <h4>Test Voice</h4>
+            <div class="test-controls">
+              <input 
+                type="text" 
+                bind:value={testText} 
+                placeholder="Enter text to test voice" 
+                class="test-input"
+              />
+              <button 
+                onclick={testVoice} 
+                class="test-button"
+                disabled={testingVoice || !testText}
+              >
+                {testingVoice ? 'Testing...' : 'Test Voice'}
+              </button>
+            </div>
+            
+            {#if audioSrc && selectionMode === 'foreign'}
+              <div class="audio-player">
+                <audio bind:this={audioElement} controls src={audioSrc}></audio>
+              </div>
+            {/if}
           </div>
         {/if}
       </div>
-    </div>
-  {/if}
+    {/if}
+    
+    {#if $selectedVoiceEnglish}
+      <div class="selected-voice">
+        <h3>Selected English Voice</h3>
+        <div class="voice-name">{$selectedVoiceEnglish.name}</div>
+        <div class="voice-details">
+          <span>Language: {$selectedVoiceEnglish.languageCodes.join(', ')}</span>
+          <span>Gender: {$selectedVoiceEnglish.ssmlGender}</span>
+        </div>
+        
+        {#if selectionMode === 'english'}
+          <div class="voice-test">
+            <h4>Test Voice</h4>
+            <div class="test-controls">
+              <input 
+                type="text" 
+                bind:value={testText} 
+                placeholder="Enter text to test voice" 
+                class="test-input"
+              />
+              <button 
+                onclick={testVoice} 
+                class="test-button"
+                disabled={testingVoice || !testText}
+              >
+                {testingVoice ? 'Testing...' : 'Test Voice'}
+              </button>
+            </div>
+            
+            {#if audioSrc && selectionMode === 'english'}
+              <div class="audio-player">
+                <audio bind:this={audioElement} controls src={audioSrc}></audio>
+              </div>
+            {/if}
+          </div>
+        {/if}
+      </div>
+    {/if}
+  </div>
 </div>
 
 <style>
@@ -230,6 +309,28 @@
     max-width: 800px;
     margin: 0 auto;
     padding: 1rem;
+  }
+  
+  .mode-selector {
+    display: flex;
+    gap: 1rem;
+    margin-bottom: 1rem;
+  }
+  
+  .mode-selector button {
+    flex: 1;
+    padding: 0.75rem;
+    border: 1px solid #ddd;
+    background-color: #f5f5f5;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+  }
+  
+  .mode-selector button.active {
+    background-color: #2196f3;
+    color: white;
+    border-color: #0b7dda;
   }
   
   .filters {
@@ -324,8 +425,14 @@
     color: #666;
   }
   
-  .selected-voice {
+  .selected-voices {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
     margin-top: 2rem;
+  }
+  
+  .selected-voice {
     padding: 1rem;
     background-color: #e3f2fd;
     border-radius: 4px;

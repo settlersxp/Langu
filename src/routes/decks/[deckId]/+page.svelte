@@ -22,12 +22,12 @@
 	let loading = $state(true);
 	let error = $state<string | null>(null);
 	let deckId: number;
-	let selectedVoice: JSON | null = $state(null);
+	let selectedVoiceForeign: JSON | null = $state(null);
 
 	// Get the deck ID from the URL parameter and fetch data
 	onMount(async () => {
-		// Get the selected voice from the browser's cache under the key "selectedVoice"
-		selectedVoice = JSON.parse(localStorage.getItem('selectedVoice') || '{}');
+		// Get the selected voice from the browser's cache under the key "selectedVoiceForeign"
+		selectedVoiceForeign = JSON.parse(localStorage.getItem('selectedVoiceForeign') || '{}');
 		
 		try {
 			// Get deck ID from URL
@@ -152,7 +152,7 @@
 				headers: {
 					'Content-Type': 'application/json'
 				},
-				body: JSON.stringify({ voice: selectedVoice })
+				body: JSON.stringify({ voice: selectedVoiceForeign })
 			});
 			
 			if (!response.ok) {
@@ -189,7 +189,7 @@
 						headers: {
 							'Content-Type': 'application/json'
 						},
-						body: JSON.stringify({ voice: selectedVoice })
+						body: JSON.stringify({ voice: selectedVoiceForeign })
 					})
 						.then(response => {
 							if (!response.ok) {

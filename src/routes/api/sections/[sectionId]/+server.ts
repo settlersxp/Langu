@@ -19,7 +19,7 @@ import type { RequestHandler } from './$types';
 import path from 'path';
 import { promises as fsPromises } from 'fs';
 import { PrismaClient } from '@prisma/client';
-import { selectedVoice } from '$lib/stores/voiceStore';
+import { selectedVoiceForeign } from '$lib/stores/voiceStore';
 import { get } from 'svelte/store';
 import { protos } from '@google-cloud/text-to-speech';
 
@@ -92,9 +92,9 @@ export const POST: RequestHandler = async ({ params, locals, request }) => {
         throw error(500, 'TTS client not initialized');
       }
       
-      // Get the voice from the request or use the selected voice found in the browser's cache under the key "selectedVoice"
+      // Get the voice from the request or use the selected voice found in the browser's cache under the key "selectedVoiceForeign"
       const body = await request.json().catch(() => ({}));
-      const voice = body.voice || get(selectedVoice);
+      const voice = body.voice || get(selectedVoiceForeign);
       console.log('voice', voice);
       
       if (!voice) {

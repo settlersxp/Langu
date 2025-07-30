@@ -12,7 +12,7 @@
 	import type { Deck } from '$lib/database/schema';
 	import DeckComponent from '$lib/components/DeckComponent.svelte';
 	import VoiceSelector from '$lib/components/VoiceSelector.svelte';
-	import { selectedVoice } from '$lib/stores/voiceStore';
+	import { selectedVoiceForeign } from '$lib/stores/voiceStore';
 	import { onMount } from 'svelte';
 
 	let decks: Deck[] = $state([]);
@@ -72,7 +72,7 @@
 				<button onclick={addDeck} class="add-button">Add Deck</button>
 				<button onclick={toggleVoiceSelector} class="voice-button">
 					{showVoiceSelector ? 'Hide Voice Selector' : 'Select Voice'}
-					{#if $selectedVoice}
+					{#if $selectedVoiceForeign}
 						<span class="selected-indicator">✓</span>
 					{/if}
 				</button>
