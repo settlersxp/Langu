@@ -5,7 +5,7 @@ This file contains the server-side logic for the decks API.
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PrismaClient } from '@prisma/client';
-import type { CreateDeckInput } from '$lib/database/schema';
+import type { CreateDeckInput } from '$lib/models/deck';
 
 const prisma = new PrismaClient();
 

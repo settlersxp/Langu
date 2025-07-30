@@ -5,7 +5,7 @@ This file contains the server-side logic for the single deck API.
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PrismaClient } from '@prisma/client';
-import type { UpdateDeckInput } from '$lib/database/schema';
+import type { UpdateDeckInput } from '$lib/models/deck';
 
 const prisma = new PrismaClient();
 

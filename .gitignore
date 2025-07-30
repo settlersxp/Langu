@@ -12,6 +12,9 @@ node_modules
 # Any prisma database
 prisma/*.db
 
+# cached audio files
+audio-cache/*
+
 # OS
 .DS_Store
 Thumbs.db

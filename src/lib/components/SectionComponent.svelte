@@ -6,6 +6,7 @@
     */
 
 	import type { Section } from '$lib/database/schema';
+	import { fade } from 'svelte/transition';
 
 	interface Props {
 		section: Section;
@@ -14,18 +15,121 @@
 	}
 
 	let { section, onRemove, onPlay }: Props = $props();
+	
+	// Edit mode state
+	let isEditing = $state(false);
+	let editedForeignText = $state('');
+	let editedEnglishText = $state('');
+	let isSaving = $state(false);
+	let errorMessage = $state<string | null>(null);
+	
+	// Start editing mode
+	function startEdit() {
+		editedForeignText = section.foreignText;
+		editedEnglishText = section.englishText;
+		isEditing = true;
+	}
+	
+	// Cancel editing
+	function cancelEdit() {
+		isEditing = false;
+		errorMessage = null;
+	}
+	
+	// Save changes
+	async function saveChanges() {
+		if (!editedForeignText.trim() || !editedEnglishText.trim()) {
+			errorMessage = "Both text fields are required";
+			return;
+		}
+		
+		try {
+			isSaving = true;
+			errorMessage = null;
+			
+			// Check if foreign text changed - this would require audio cache invalidation
+			const foreignTextChanged = editedForeignText !== section.foreignText;
+			
+			// Prepare update data
+			const updateData = {
+				foreignText: editedForeignText,
+				englishText: editedEnglishText,
+				invalidateCache: foreignTextChanged
+			};
+			
+			// Send update to API
+			const response = await fetch(`/api/sections/${section.id}`, {
+				method: 'PATCH',
+				headers: {
+					'Content-Type': 'application/json'
+				},
+				body: JSON.stringify(updateData)
+			});
+			
+			if (!response.ok) {
+				throw new Error(`Failed to update section: ${response.statusText}`);
+			}
+			
+			// Update local section data with response
+			const updatedSection = await response.json();
+			section = updatedSection;
+			
+			// Exit edit mode
+			isEditing = false;
+		} catch (err) {
+			console.error('Error updating section:', err);
+			errorMessage = err instanceof Error ? err.message : 'Failed to update section';
+		} finally {
+			isSaving = false;
+		}
+	}
 </script>
 
 <div class="section-card">
 	<div class="section-content">
-		<div class="text-container">
-			<div class="foreign-text">{section.foreignText}</div>
-			<div class="english-text">{section.englishText}</div>
-		</div>
-		<div class="section-controls">
-			<button class="play-btn" onclick={onPlay}>▶</button>
-			<button class="remove-btn" onclick={onRemove}>×</button>
-		</div>
+		{#if isEditing}
+			<div class="edit-form" transition:fade={{ duration: 150 }}>
+				<div class="form-group">
+					<label for="foreignText">Foreign Text</label>
+					<textarea 
+						id="foreignText" 
+						bind:value={editedForeignText}
+						placeholder="Enter text in foreign language"
+						rows="2"
+					></textarea>
+				</div>
+				<div class="form-group">
+					<label for="englishText">English Text</label>
+					<textarea 
+						id="englishText" 
+						bind:value={editedEnglishText}
+						placeholder="Enter English translation"
+						rows="2"
+					></textarea>
+				</div>
+				
+				{#if errorMessage}
+					<div class="error-message">{errorMessage}</div>
+				{/if}
+				
+				<div class="edit-controls">
+					<button class="cancel-btn" onclick={cancelEdit} disabled={isSaving}>Cancel</button>
+					<button class="save-btn" onclick={saveChanges} disabled={isSaving}>
+						{isSaving ? 'Saving...' : 'Save'}
+					</button>
+				</div>
+			</div>
+		{:else}
+			<div class="text-container">
+				<div class="foreign-text">{section.foreignText}</div>
+				<div class="english-text">{section.englishText}</div>
+			</div>
+			<div class="section-controls">
+				<button class="edit-btn" onclick={startEdit}>✎</button>
+				<button class="play-btn" onclick={onPlay}>▶</button>
+				<button class="remove-btn" onclick={onRemove}>×</button>
+			</div>
+		{/if}
 	</div>
 </div>
 
@@ -74,7 +178,8 @@
 	}
 
 	.play-btn,
-	.remove-btn {
+	.remove-btn,
+	.edit-btn {
 		background: none;
 		border: none;
 		cursor: pointer;
@@ -96,6 +201,15 @@
 	.play-btn:hover {
 		background-color: #45a049;
 	}
+	
+	.edit-btn {
+		background-color: #2196f3;
+		color: white;
+	}
+	
+	.edit-btn:hover {
+		background-color: #0b7dda;
+	}
 
 	.remove-btn {
 		color: #ff5252;
@@ -103,5 +217,76 @@
 
 	.remove-btn:hover {
 		background-color: rgba(255, 82, 82, 0.1);
+	}
+	
+	/* Edit form styles */
+	.edit-form {
+		width: 100%;
+		padding: 0.5rem;
+	}
+	
+	.form-group {
+		margin-bottom: 1rem;
+	}
+	
+	label {
+		display: block;
+		margin-bottom: 0.3rem;
+		font-weight: 500;
+		font-size: 0.9rem;
+	}
+	
+	textarea {
+		width: 100%;
+		padding: 0.5rem;
+		border: 1px solid #ddd;
+		border-radius: 4px;
+		font-family: inherit;
+		font-size: 0.9rem;
+		resize: vertical;
+	}
+	
+	.edit-controls {
+		display: flex;
+		justify-content: flex-end;
+		gap: 0.5rem;
+		margin-top: 1rem;
+	}
+	
+	.save-btn, .cancel-btn {
+		padding: 0.5rem 1rem;
+		border: none;
+		border-radius: 4px;
+		cursor: pointer;
+		font-size: 0.9rem;
+	}
+	
+	.save-btn {
+		background-color: #4caf50;
+		color: white;
+	}
+	
+	.save-btn:hover:not(:disabled) {
+		background-color: #45a049;
+	}
+	
+	.cancel-btn {
+		background-color: #f1f1f1;
+		color: #333;
+	}
+	
+	.cancel-btn:hover:not(:disabled) {
+		background-color: #e0e0e0;
+	}
+	
+	button:disabled {
+		opacity: 0.7;
+		cursor: not-allowed;
+	}
+	
+	.error-message {
+		color: #ff5252;
+		font-size: 0.85rem;
+		margin-top: 0.5rem;
 	}
 </style>
