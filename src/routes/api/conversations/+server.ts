@@ -2,6 +2,7 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PrismaClient } from '@prisma/client';
 import { createSystemPrompt, sendChatRequest, type OllamaMessage } from '$lib/services/ollama';
+import { validatePhrase } from '$lib/services/phraseValidator';
 
 const prisma = new PrismaClient();
 
@@ -17,7 +18,7 @@ export const GET: RequestHandler = async () => {
 };
 
 // POST to create a new conversation
-export const POST: RequestHandler = async ({ request }) => {
+export const POST: RequestHandler = async ({ request, locals }) => {
   const { title, initialMessage } = await request.json();
   
   if (!title || !initialMessage) {
@@ -39,11 +40,14 @@ export const POST: RequestHandler = async ({ request }) => {
     }
   });
 
+  // Create initial conversation context
+  const initialContext = `Topic: ${title}. Initial user message: ${initialMessage}`;
+
   // Send the initial message to the AI
   const ollamaMessages: OllamaMessage[] = [
     { 
       role: 'system', 
-      content: await createSystemPrompt(title)
+      content: await createSystemPrompt(title, initialContext)
     },
     { role: 'user', content: initialMessage }
   ];
@@ -51,12 +55,16 @@ export const POST: RequestHandler = async ({ request }) => {
   try {
     const ollamaResponse = await sendChatRequest(ollamaMessages);
     
+    // Validate the assistant's response
+    const confidenceLevel = await validatePhrase(ollamaResponse.message.content);
+    
     // Save the assistant's response
     const assistantMessage = await prisma.message.create({
       data: {
         conversationId: conversation.id,
         role: 'assistant',
-        content: ollamaResponse.message.content
+        content: ollamaResponse.message.content,
+        confidenceLevel: confidenceLevel
       }
     });
 

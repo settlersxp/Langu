@@ -6,6 +6,7 @@
     conversationId: number;
     role: 'user' | 'assistant';
     content: string;
+    confidenceLevel?: number;
     createdAt: string;
   }
   
@@ -245,6 +246,14 @@
             <div class="message-content">
               {message.content}
             </div>
+            {#if message.role === 'assistant' && message.confidenceLevel !== undefined && message.confidenceLevel !== null}
+              <div class="confidence-level">
+                <span class="confidence-label">Confidence:</span>
+                <span class="confidence-value" class:low={message.confidenceLevel < 70} class:medium={message.confidenceLevel >= 70 && message.confidenceLevel < 85} class:high={message.confidenceLevel >= 85}>
+                  {message.confidenceLevel.toFixed(1)}%
+                </span>
+              </div>
+            {/if}
           </div>
         {/each}
         
@@ -396,6 +405,39 @@
   
   .message-content {
     white-space: pre-wrap;
+  }
+  
+  .confidence-level {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    opacity: 0.8;
+  }
+  
+  .confidence-label {
+    color: #6c757d;
+    margin-right: 0.25rem;
+  }
+  
+  .confidence-value {
+    font-weight: 500;
+    padding: 0.125rem 0.375rem;
+    border-radius: 4px;
+    font-size: 0.75rem;
+  }
+  
+  .confidence-value.high {
+    background-color: #d4edda;
+    color: #155724;
+  }
+  
+  .confidence-value.medium {
+    background-color: #fff3cd;
+    color: #856404;
+  }
+  
+  .confidence-value.low {
+    background-color: #f8d7da;
+    color: #721c24;
   }
   
   .message-input {

@@ -1,0 +1,7 @@
+{
+    "python.envFile": "${workspaceFolder}/pyBackend/.env",
+    "python.terminal.shellIntegration.enabled": true,
+    "python.autoComplete.extraPaths": [
+        "${workspaceFolder}/pyBackend/.venv/bin/activate"
+    ]
+}

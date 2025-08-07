@@ -2,11 +2,12 @@ import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PrismaClient } from '@prisma/client';
 import { createSystemPrompt, sendChatRequest, type OllamaMessage } from '$lib/services/ollama';
+import { validatePhrase } from '$lib/services/phraseValidator';
 
 const prisma = new PrismaClient();
 
 // POST to add a new message and get a response from Ollama
-export const POST: RequestHandler = async ({ request, params }) => {
+export const POST: RequestHandler = async ({ request, params, locals }) => {
   const { conversationId } = params;
   const { content } = await request.json();
   
@@ -42,11 +43,15 @@ export const POST: RequestHandler = async ({ request, params }) => {
     }
   });
 
+  // Create conversation context for smart word selection
+  const recentMessages = conversation.messages.slice(-5); // Last 5 messages for context
+  const conversationContext = `Topic: ${conversation.title}. Recent conversation: ${recentMessages.map(m => m.content).join(' ')} Current user message: ${content}`;
+
   // Format messages for Ollama API
   const ollamaMessages: OllamaMessage[] = [
     { 
       role: 'system', 
-      content: await createSystemPrompt(conversation.title)
+      content: await createSystemPrompt(conversation.title, conversationContext)
     },
     ...conversation.messages.reverse().map(msg => ({  // Reverse to get chronological order
       role: msg.role as 'user' | 'assistant',
@@ -61,12 +66,16 @@ export const POST: RequestHandler = async ({ request, params }) => {
   try {
     const ollamaResponse = await sendChatRequest(ollamaMessages);
     
+    // Validate the assistant's response
+    const confidenceLevel = await validatePhrase(ollamaResponse.message.content);
+    
     // Save the assistant's response
     const assistantMessage = await prisma.message.create({
       data: {
         conversationId: parseInt(conversationId),
         role: 'assistant',
-        content: ollamaResponse.message.content
+        content: ollamaResponse.message.content,
+        confidenceLevel: confidenceLevel
       }
     });
 

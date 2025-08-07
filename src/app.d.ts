@@ -7,6 +7,7 @@ declare global {
 		// interface Error {}
 		interface Locals {
 			ttsClient: TextToSpeechClient | null;
+			curatedWords: string[];
 		}
 		// interface PageData {}
 		// interface PageState {}
