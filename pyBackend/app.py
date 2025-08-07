@@ -1,8 +1,6 @@
-import spacy
-nlp = spacy.load("de_core_news_md")   
+from transformers import AutoProcessor, AutoModelForSpeechSeq2Seq
 
-text = "Heute ist ein schöner Tag, sonnig und warm, ideal für einen Spaziergang im Park oder eine Radtour durch die Stadt mit Freunden."
-doc = nlp(text)
+processor = AutoProcessor.from_pretrained("openai/whisper-large-v3")
+model = AutoModelForSpeechSeq2Seq.from_pretrained("openai/whisper-large-v3")
 
-for token in doc:
-    print(token.text, token.pos_)
+print('Model loaded')

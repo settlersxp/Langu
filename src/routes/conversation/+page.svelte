@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import MessageList from '$lib/components/MessageList.svelte';
   
   interface Message {
     id: number;
@@ -7,6 +8,7 @@
     role: 'user' | 'assistant';
     content: string;
     confidenceLevel?: number;
+    translation?: string;
     createdAt: string;
   }
   
@@ -240,33 +242,7 @@
         <h2>{currentConversation.title}</h2>
       </div>
       
-      <div class="messages">
-        {#each messages as message (message.id)}
-          <div class="message {message.role}">
-            <div class="message-content">
-              {message.content}
-            </div>
-            {#if message.role === 'assistant' && message.confidenceLevel !== undefined && message.confidenceLevel !== null}
-              <div class="confidence-level">
-                <span class="confidence-label">Confidence:</span>
-                <span class="confidence-value" class:low={message.confidenceLevel < 70} class:medium={message.confidenceLevel >= 70 && message.confidenceLevel < 85} class:high={message.confidenceLevel >= 85}>
-                  {message.confidenceLevel.toFixed(1)}%
-                </span>
-              </div>
-            {/if}
-          </div>
-        {/each}
-        
-        {#if isLoading}
-          <div class="message assistant loading">
-            <div class="loading-indicator">
-              <span></span>
-              <span></span>
-              <span></span>
-            </div>
-          </div>
-        {/if}
-      </div>
+      <MessageList {messages} {isLoading} />
       
       <div class="message-input">
         <textarea 
@@ -373,72 +349,7 @@
     background-color: #0069d9;
   }
   
-  .messages {
-    flex: 1;
-    overflow-y: auto;
-    padding: 1rem 0;
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-  }
-  
-  .message {
-    max-width: 80%;
-    padding: 1rem;
-    border-radius: 12px;
-    margin-bottom: 0.5rem;
-  }
-  
-  .message.user {
-    background-color: #007bff;
-    color: white;
-    align-self: flex-end;
-    border-bottom-right-radius: 4px;
-  }
-  
-  .message.assistant {
-    background-color: #f1f3f5;
-    color: #212529;
-    align-self: flex-start;
-    border-bottom-left-radius: 4px;
-  }
-  
-  .message-content {
-    white-space: pre-wrap;
-  }
-  
-  .confidence-level {
-    margin-top: 0.5rem;
-    font-size: 0.8rem;
-    opacity: 0.8;
-  }
-  
-  .confidence-label {
-    color: #6c757d;
-    margin-right: 0.25rem;
-  }
-  
-  .confidence-value {
-    font-weight: 500;
-    padding: 0.125rem 0.375rem;
-    border-radius: 4px;
-    font-size: 0.75rem;
-  }
-  
-  .confidence-value.high {
-    background-color: #d4edda;
-    color: #155724;
-  }
-  
-  .confidence-value.medium {
-    background-color: #fff3cd;
-    color: #856404;
-  }
-  
-  .confidence-value.low {
-    background-color: #f8d7da;
-    color: #721c24;
-  }
+
   
   .message-input {
     display: flex;
@@ -495,11 +406,7 @@
     margin-bottom: 1rem;
   }
   
-  .system-prompt {
-    font-size: 0.9rem;
-    color: #6c757d;
-    margin-top: 0.5rem;
-  }
+
   
   .new-conversation-form {
     padding: 1rem;
@@ -560,35 +467,5 @@
     cursor: not-allowed;
   }
   
-  .loading-indicator {
-    display: flex;
-    gap: 0.25rem;
-    align-items: center;
-    justify-content: center;
-    height: 2rem;
-  }
-  
-  .loading-indicator span {
-    width: 8px;
-    height: 8px;
-    background-color: #adb5bd;
-    border-radius: 50%;
-    animation: bounce 1.4s infinite ease-in-out both;
-  }
-  
-  .loading-indicator span:nth-child(1) {
-    animation-delay: -0.32s;
-  }
-  
-  .loading-indicator span:nth-child(2) {
-    animation-delay: -0.16s;
-  }
-  
-  @keyframes bounce {
-    0%, 80%, 100% { 
-      transform: scale(0);
-    } 40% { 
-      transform: scale(1);
-    }
-  }
+
 </style>

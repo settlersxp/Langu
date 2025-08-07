@@ -3,6 +3,7 @@
  */
 
 import { getRelevantWords } from './smartWordSelector.js';
+import { OLLAMA_API_URL } from '$env/static/private';
 
 export interface OllamaMessage {
   role: 'system' | 'user' | 'assistant';
@@ -77,7 +78,7 @@ export async function sendChatRequest(messages: OllamaMessage[]): Promise<Ollama
   console.log('Llama template prompt:', prompt);
   
   try {
-    const response = await fetch('http://localhost:11434/api/generate', {
+    const response = await fetch(`${OLLAMA_API_URL}/api/generate`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'

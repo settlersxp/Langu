@@ -44,5 +44,6 @@ model Message {
   role           String       // 'user' or 'assistant'
   content        String
   confidenceLevel Float?      // Phrase validation confidence (only for assistant messages)
+  translation    String?      // English translation of the message content
   createdAt      DateTime     @default(now())
 }
