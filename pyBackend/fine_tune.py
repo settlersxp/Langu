@@ -23,6 +23,10 @@ from sklearn.metrics.pairwise import cosine_similarity
 import pickle
 import spacy
 from flask import Flask, request, jsonify
+from flask_cors import CORS
+from transformers import AutoModelForSpeechSeq2Seq, AutoProcessor, pipeline
+import torch
+import tempfile
 
 class SmartWordSelector:
     def __init__(self, curated_words_path: str, cache_path: str = "word_embeddings.pkl"):
@@ -149,10 +153,33 @@ class SmartWordSelector:
 
 # Flask app for API integration
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 
 # Initialize the word selector
 curated_words_path = os.path.join(os.path.dirname(__file__), "..", "curated_words.txt")
 word_selector = SmartWordSelector(curated_words_path)
+
+# Initialize Whisper model for speech-to-text
+device = "cuda:0" if torch.cuda.is_available() else "cpu"
+torch_dtype = torch.float16 if torch.cuda.is_available() else torch.float32
+
+model_id = "openai/whisper-small"
+
+whisper_model = AutoModelForSpeechSeq2Seq.from_pretrained(
+    model_id, torch_dtype=torch_dtype, low_cpu_mem_usage=True, use_safetensors=True
+)
+whisper_model.to(device)
+
+whisper_processor = AutoProcessor.from_pretrained(model_id)
+
+whisper_pipe = pipeline(
+    "automatic-speech-recognition",
+    model=whisper_model,
+    tokenizer=whisper_processor.tokenizer,
+    feature_extractor=whisper_processor.feature_extractor,
+    torch_dtype=torch_dtype,
+    device=device,
+)
 
 @app.route('/relevant-words', methods=['POST'])
 def get_relevant_words():
@@ -282,13 +309,69 @@ def analyze_with_suggestions():
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
+@app.route('/speech-to-text', methods=['POST'])
+def speech_to_text():
+    """
+    API endpoint to convert speech audio to text
+    
+    Expects multipart/form-data with an audio file
+    """
+    try:
+        print("Received speech-to-text request")
+        
+        if 'audio' not in request.files:
+            return jsonify({'error': 'No audio file provided', 'success': False}), 400
+        
+        audio_file = request.files['audio']
+        if audio_file.filename == '':
+            return jsonify({'error': 'No audio file selected', 'success': False}), 400
+        
+        print(f"Processing audio file: {audio_file.filename}, size: {audio_file.content_length}")
+        
+        # Determine file extension based on content type or filename
+        content_type = audio_file.content_type or 'audio/wav'
+        if 'webm' in content_type or 'webm' in audio_file.filename:
+            suffix = '.webm'
+        elif 'mp4' in content_type or 'mp4' in audio_file.filename:
+            suffix = '.mp4'
+        else:
+            suffix = '.wav'
+        
+        # Save the uploaded file temporarily
+        with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as temp_file:
+            audio_file.save(temp_file.name)
+            temp_path = temp_file.name
+        
+        try:
+            print(f"Processing audio file at: {temp_path}")
+            # Process the audio file with Whisper
+            result = whisper_pipe(temp_path, generate_kwargs={"language": "german"})
+            transcribed_text = result['text'].strip()
+            
+            print(f"Transcription result: {transcribed_text}")
+            
+            return jsonify({
+                'text': transcribed_text,
+                'success': True
+            })
+        
+        finally:
+            # Clean up the temporary file
+            if os.path.exists(temp_path):
+                os.unlink(temp_path)
+    
+    except Exception as e:
+        print(f"Error in speech-to-text: {str(e)}")
+        return jsonify({'error': str(e), 'success': False}), 500
+
 @app.route('/health', methods=['GET'])
 def health_check():
     """Health check endpoint"""
     return jsonify({
         'status': 'healthy',
         'total_words': len(word_selector.words),
-        'embeddings_loaded': word_selector.embeddings is not None
+        'embeddings_loaded': word_selector.embeddings is not None,
+        'whisper_model_loaded': whisper_pipe is not None
     })
 
 if __name__ == '__main__':
@@ -315,5 +398,6 @@ if __name__ == '__main__':
     print("- POST /relevant-words - Get contextual words")
     print("- POST /validate-phrase - Validate German text")
     print("- POST /analyze-with-suggestions - Combined analysis")
+    print("- POST /speech-to-text - Convert audio to text")
     print("- GET /health - Health check")
     app.run(debug=True, host='0.0.0.0', port=5004)

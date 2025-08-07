@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from 'svelte';
   import MessageList from '$lib/components/MessageList.svelte';
+  import MicrophoneButton from '$lib/components/MicrophoneButton.svelte';
   
   interface Message {
     id: number;
@@ -9,6 +10,8 @@
     content: string;
     confidenceLevel?: number;
     translation?: string;
+    audioPath?: string;
+    audioUuid?: string;
     createdAt: string;
   }
   
@@ -152,6 +155,10 @@
       sendMessage();
     }
   }
+  
+  function handleTranscription(text: string) {
+    newMessage = text;
+  }
 </script>
 
 <div class="container">
@@ -251,12 +258,18 @@
           onkeydown={handleKeyDown}
           disabled={isLoading}
         ></textarea>
-        <button 
-          onclick={() => sendMessage()} 
-          disabled={!newMessage || isLoading}
-        >
-          Send
-        </button>
+        <div class="input-controls">
+          <MicrophoneButton 
+            onTranscription={handleTranscription}
+            disabled={isLoading}
+          />
+          <button 
+            onclick={() => sendMessage()} 
+            disabled={!newMessage || isLoading}
+          >
+            Send
+          </button>
+        </div>
       </div>
     {:else}
       <div class="empty-chat">
@@ -367,16 +380,23 @@
     min-height: 60px;
   }
   
-  .message-input button {
+  .input-controls {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+  
+  .input-controls button {
     padding: 0 1.5rem;
     background-color: #007bff;
     color: white;
     border: none;
     border-radius: 8px;
     cursor: pointer;
+    height: 48px;
   }
   
-  .message-input button:disabled {
+  .input-controls button:disabled {
     background-color: #6c757d;
     cursor: not-allowed;
   }

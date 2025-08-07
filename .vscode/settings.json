@@ -3,5 +3,8 @@
     "python.terminal.shellIntegration.enabled": true,
     "python.autoComplete.extraPaths": [
         "${workspaceFolder}/pyBackend/.venv/bin/activate"
+    ],
+    "python.analysis.extraPaths": [
+        "${workspaceFolder}/pyBackend/.venv/bin/activate"
     ]
 }

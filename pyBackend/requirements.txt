@@ -3,6 +3,9 @@ wheel
 spacy[apple]
 PyPDF2
 flask
+flask-cors
 sentence-transformers
 numpy
 scikit-learn
+transformers
+torch

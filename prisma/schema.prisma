@@ -45,5 +45,7 @@ model Message {
   content        String
   confidenceLevel Float?      // Phrase validation confidence (only for assistant messages)
   translation    String?      // English translation of the message content
+  audioPath      String?      // Path to the generated audio file
+  audioUuid      String?      // UUID for the audio file
   createdAt      DateTime     @default(now())
 }

@@ -1,4 +1,6 @@
 <script lang="ts">
+  import AudioControls from './AudioControls.svelte';
+  
   interface Message {
     id: number;
     conversationId: number;
@@ -6,6 +8,8 @@
     content: string;
     confidenceLevel?: number;
     translation?: string;
+    audioPath?: string;
+    audioUuid?: string;
     createdAt: string;
   }
 
@@ -18,6 +22,11 @@
   
   // State for managing translations
   let translationStates = $state<{[messageId: number]: {isTranslating: boolean, showTranslation: boolean}}>({});
+  
+  // State for managing audio playback
+  let audioStates = $state<{[messageId: number]: {isGenerating: boolean, isPlaying: boolean, isPaused: boolean, hasAudio: boolean}}>({});
+  let currentAudio: HTMLAudioElement | null = null;
+  let currentMessageId: number | null = null;
   
   async function toggleTranslation(message: Message) {
     if (!translationStates[message.id]) {
@@ -59,6 +68,102 @@
       state.showTranslation = true;
     }
   }
+  
+  async function playMessageAudio(message: Message) {
+    if (!audioStates[message.id]) {
+      audioStates[message.id] = { isGenerating: false, isPlaying: false, isPaused: false, hasAudio: false };
+    }
+    
+    const state = audioStates[message.id];
+    
+    // Stop any currently playing audio from other messages
+    if (currentAudio && currentMessageId !== message.id) {
+      currentAudio.pause();
+      if (currentMessageId) {
+        audioStates[currentMessageId].isPlaying = false;
+        audioStates[currentMessageId].isPaused = false;
+      }
+    }
+    
+    try {
+      state.isGenerating = true;
+      
+      // Generate or get audio
+      const response = await fetch(`/api/messages/${message.id}/tts`, {
+        method: 'POST'
+      });
+      
+      if (response.ok) {
+        const result = await response.json();
+        
+        // Update message with audio info
+        message.audioPath = result.audioPath;
+        message.audioUuid = result.audioUuid;
+        
+        // Create and play audio
+        const audio = new Audio(result.audioPath);
+        currentAudio = audio;
+        currentMessageId = message.id;
+        state.isPlaying = true;
+        state.isPaused = false;
+        state.hasAudio = true;
+        
+        audio.onended = () => {
+          state.isPlaying = false;
+          state.isPaused = false;
+        };
+        
+        audio.onerror = () => {
+          state.isPlaying = false;
+          state.isPaused = false;
+          currentAudio = null;
+          currentMessageId = null;
+          console.error('Error playing audio');
+        };
+        
+        await audio.play();
+      } else {
+        console.error('Failed to generate audio');
+      }
+    } catch (error) {
+      console.error('Error playing message audio:', error);
+    } finally {
+      state.isGenerating = false;
+    }
+  }
+  
+  function togglePlayPause(message: Message) {
+    if (!audioStates[message.id]) return;
+    
+    const state = audioStates[message.id];
+    
+    if (currentAudio && currentMessageId === message.id) {
+      if (state.isPlaying) {
+        currentAudio.pause();
+        state.isPlaying = false;
+        state.isPaused = true;
+      } else if (state.isPaused) {
+        currentAudio.play();
+        state.isPlaying = true;
+        state.isPaused = false;
+      }
+    }
+  }
+  
+  function replayAudio(message: Message) {
+    if (!audioStates[message.id]) return;
+    
+    const state = audioStates[message.id];
+    
+    if (currentAudio && currentMessageId === message.id) {
+      currentAudio.currentTime = 0;
+      if (!state.isPlaying) {
+        currentAudio.play();
+        state.isPlaying = true;
+        state.isPaused = false;
+      }
+    }
+  }
 </script>
 
 <div class="messages">
@@ -67,8 +172,34 @@
       <div class="message-content">
         {message.content}
       </div>
-      {#if message.role === 'assistant' && message.confidenceLevel !== undefined && message.confidenceLevel !== null}
-        <div class="message-meta">
+      <!-- Message actions for all messages -->
+      <div class="message-actions">
+        <!-- TTS button for all messages -->
+        {#if audioStates[message.id]?.hasAudio && (audioStates[message.id]?.isPlaying || audioStates[message.id]?.isPaused)}
+          <!-- Show audio controls when audio is loaded and playing/paused -->
+          <AudioControls 
+            isPlaying={audioStates[message.id]?.isPlaying || false}
+            onPlayPause={() => togglePlayPause(message)}
+            onReplay={() => replayAudio(message)}
+          />
+        {:else}
+          <!-- Show single TTS button when no audio or not playing -->
+          <button 
+            class="action-btn tts-btn"
+            onclick={() => playMessageAudio(message)}
+            disabled={audioStates[message.id]?.isGenerating}
+            title="Play audio"
+          >
+            {#if audioStates[message.id]?.isGenerating}
+              🔄
+            {:else}
+              🔊
+            {/if}
+          </button>
+        {/if}
+        
+        <!-- Confidence and translate for assistant messages only -->
+        {#if message.role === 'assistant' && message.confidenceLevel !== undefined && message.confidenceLevel !== null}
           <div class="confidence-level">
             <span class="confidence-label">Confidence:</span>
             <span class="confidence-value" class:low={message.confidenceLevel < 70} class:medium={message.confidenceLevel >= 70 && message.confidenceLevel < 85} class:high={message.confidenceLevel >= 85}>
@@ -76,7 +207,7 @@
             </span>
           </div>
           <button 
-            class="translate-btn"
+            class="action-btn translate-btn"
             onclick={() => toggleTranslation(message)}
             disabled={translationStates[message.id]?.isTranslating}
           >
@@ -88,8 +219,8 @@
               Translate
             {/if}
           </button>
-        </div>
-      {/if}
+        {/if}
+      </div>
       
       {#if translationStates[message.id]?.showTranslation && message.translation}
         <div class="translation">
@@ -146,7 +277,7 @@
     white-space: pre-wrap;
   }
 
-  .message-meta {
+  .message-actions {
     margin-top: 0.5rem;
     display: flex;
     align-items: center;
@@ -187,7 +318,7 @@
     color: #721c24;
   }
 
-  .translate-btn {
+  .action-btn {
     background: none;
     border: 1px solid #dee2e6;
     color: #6c757d;
@@ -196,17 +327,32 @@
     border-radius: 4px;
     cursor: pointer;
     transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 2rem;
+    height: 1.75rem;
   }
 
-  .translate-btn:hover:not(:disabled) {
+  .action-btn:hover:not(:disabled) {
     background-color: #f8f9fa;
     border-color: #adb5bd;
     color: #495057;
   }
 
-  .translate-btn:disabled {
+  .action-btn:disabled {
     opacity: 0.6;
     cursor: not-allowed;
+  }
+
+  .tts-btn {
+    font-size: 0.9rem;
+  }
+
+  .tts-btn:hover:not(:disabled) {
+    background-color: #e8f4f8;
+    border-color: #17a2b8;
+    color: #17a2b8;
   }
 
   .translation {

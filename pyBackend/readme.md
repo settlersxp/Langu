@@ -3,8 +3,8 @@
 ## Setup
 
 ```bash
-python3 -m env .env
-source .env/bin/activate
+python3 -m venv .venv
+source .venv/bin/activate
 ```
 
 ## Install dependencies
