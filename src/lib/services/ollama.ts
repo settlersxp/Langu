@@ -2,7 +2,8 @@
  * Service for interacting with the Ollama API
  */
 
-import { getRelevantWords } from './smartWordSelector.js';
+// Server-side: use server-only word selector (private env allowed)
+import { getRelevantWords } from './smartWordSelector.server.js';
 import { OLLAMA_API_URL } from '$env/static/private';
 
 export interface OllamaMessage {
@@ -107,13 +108,13 @@ export async function sendChatRequest(messages: OllamaMessage[]): Promise<Ollama
   }
 } 
 
-export async function createSystemPrompt(title: string, conversationContext?: string): Promise<string> {
+export async function createSystemPrompt(title: string, conversationContext?: string, wordsFile?: string): Promise<string> {
   let wordListText = `You should use words included in the Goethe B1 list of words.`;
   
   // Try to get contextually relevant words
   if (conversationContext) {
     try {
-      const relevantWords = await getRelevantWords(conversationContext, 80);
+      const relevantWords = await getRelevantWords(conversationContext, 80, wordsFile);
       if (relevantWords.length > 0) {
         wordListText = `You must mostly use words from this contextually relevant list: ${relevantWords.join(', ')}.`;
         console.log(`Using ${relevantWords.length} contextually relevant words`);

@@ -35,20 +35,39 @@ def download_models():
         return False
 
 def create_embeddings():
-    """Create initial embeddings for all words"""
-    print("Creating embeddings for all words...")
+    """Create embeddings for available word lists under currated_words/german."""
+    print("Creating embeddings for available dictionaries...")
     try:
         from fine_tune import SmartWordSelector
-        
-        curated_words_path = os.path.join(os.path.dirname(__file__), "..", "curated_words.txt")
-        if not os.path.exists(curated_words_path):
-            print(f"❌ Could not find curated_words.txt at {curated_words_path}")
-            return False
-        
-        # This will create the embeddings and cache them
-        word_selector = SmartWordSelector(curated_words_path)
-        print(f"✅ Embeddings created for {len(word_selector.words)} words")
-        return True
+
+        repo_root = os.path.normpath(os.path.join(os.path.dirname(__file__), ".."))
+        currated_dir = os.path.join(repo_root, "currated_words", "german")
+        embeddings_dir = os.path.join(repo_root, "embeddings", "german")
+        os.makedirs(embeddings_dir, exist_ok=True)
+
+        created = 0
+        if os.path.isdir(currated_dir):
+            for fname in os.listdir(currated_dir):
+                if not fname.lower().endswith('.txt'):
+                    continue
+                words_path = os.path.join(currated_dir, fname)
+                cache_path = os.path.join(embeddings_dir, f"{os.path.splitext(fname)[0]}.pkl")
+                print(f"→ Building embeddings for {fname} ...")
+                selector = SmartWordSelector(words_path, cache_path=cache_path)
+                created += 1
+            print(f"✅ Created/loaded embeddings for {created} dictionaries")
+            return True
+
+        # Fallback to legacy curated_words.txt
+        legacy = os.path.join(repo_root, "curated_words.txt")
+        if os.path.exists(legacy):
+            print("→ Building embeddings for legacy curated_words.txt ...")
+            selector = SmartWordSelector(legacy, cache_path=os.path.join(embeddings_dir, "legacy.pkl"))
+            print(f"✅ Embeddings created for {len(selector.words)} words")
+            return True
+
+        print("❌ No dictionaries found")
+        return False
     except Exception as e:
         print(f"❌ Failed to create embeddings: {e}")
         return False

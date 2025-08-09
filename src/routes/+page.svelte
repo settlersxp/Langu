@@ -20,6 +20,22 @@
 	const flipDurationMs = 200;
 	let showVoiceSelector = $state(false);
 
+// Dictionary builder form state
+let pdfFilename = $state('A1_SD1_Wortliste_02.pdf');
+let minLen = $state(3);
+const allowedPosOptions = ['NOUN', 'VERB', 'ADJ', 'ADV'] as const;
+let allowedPosSelected = $state(new Set<string>(allowedPosOptions));
+let saveOutput = $state(true);
+let outFile = $state('curated_words.txt');
+let returnLimit = $state(100);
+let refreshEmbeddings = $state(false);
+
+// Result state
+let isBuilding = $state(false);
+let buildError: string | null = $state(null);
+let buildResultCount: number | null = $state(null);
+let buildWords: string[] = $state([]);
+
 	onMount(async () => {
 		const response = await fetch('/api/decks');
 		const data = await response.json();
@@ -62,6 +78,54 @@
 	function handleUpdate(updatedDeck: Deck) {
 		decks = decks.map((deck) => deck.id === updatedDeck.id ? updatedDeck : deck);
 	}
+
+function toggleAllowedPos(tag: string) {
+    const next = new Set(allowedPosSelected);
+    if (next.has(tag)) {
+        next.delete(tag);
+    } else {
+        next.add(tag);
+    }
+    allowedPosSelected = next;
+}
+
+async function submitBuildDictionary(e: Event) {
+    e.preventDefault();
+    isBuilding = true;
+    buildError = null;
+    buildResultCount = null;
+    buildWords = [];
+
+    try {
+        const payload = {
+            filename: pdfFilename.trim(),
+            min_len: Number(minLen) || 3,
+            allowed_pos: Array.from(allowedPosSelected),
+            save: Boolean(saveOutput),
+            out_file: outFile.trim() || 'curated_words.txt',
+            return_limit: Number(returnLimit) || 0,
+            refresh_embeddings: Boolean(refreshEmbeddings)
+        };
+
+        const resp = await fetch('http://localhost:5004/build-dictionary-from-pdf', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        const data = await resp.json();
+        if (!resp.ok) {
+            buildError = data?.error || 'Failed to build dictionary';
+        } else {
+            buildResultCount = data?.count ?? 0;
+            buildWords = Array.isArray(data?.words) ? data.words : [];
+        }
+    } catch (err: any) {
+        buildError = err?.message || String(err);
+    } finally {
+        isBuilding = false;
+    }
+}
 </script>
 
 <div class="main-container">
@@ -78,6 +142,105 @@
 				</button>
 			</div>
 		</div>
+
+        <div class="dictionary-builder">
+            <h2>Build Dictionary from PDF</h2>
+            <form onsubmit={submitBuildDictionary} class="dict-form">
+                <div class="row">
+                    <label for="pdf-filename">PDF filename</label>
+                    <input
+                        type="text"
+                        placeholder="A1_SD1_Wortliste_02.pdf"
+                        id="pdf-filename"
+                        value={pdfFilename}
+                        oninput={(e) => (pdfFilename = (e.target as HTMLInputElement).value)}
+                    />
+                </div>
+
+                <div class="row two-col">
+                    <div>
+                        <label for="min-len">Min token length</label>
+                        <input
+                            type="number"
+                            min={1}
+                            id="min-len"
+                            value={minLen}
+                            oninput={(e) => (minLen = parseInt((e.target as HTMLInputElement).value || '3'))}
+                        />
+                    </div>
+                    <div>
+                        <label for="return-limit">Return limit (0 = all)</label>
+                        <input
+                            type="number"
+                            min={0}
+                            id="return-limit"
+                            value={returnLimit}
+                            oninput={(e) => (returnLimit = parseInt((e.target as HTMLInputElement).value || '0'))}
+                        />
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="group-label">Allowed POS</div>
+                    <div class="pos-grid">
+                        {#each allowedPosOptions as pos}
+                            <label class="pos-item">
+                                <input
+                                    type="checkbox"
+                                    checked={allowedPosSelected.has(pos)}
+                                    onclick={() => toggleAllowedPos(pos)}
+                                />
+                                <span>{pos}</span>
+                            </label>
+                        {/each}
+                    </div>
+                </div>
+
+                <div class="row two-col">
+                    <label class="toggle">
+                        <input type="checkbox" checked={saveOutput} onclick={() => (saveOutput = !saveOutput)} />
+                        <span>Save to file</span>
+                    </label>
+                    <label class="toggle">
+                        <input type="checkbox" checked={refreshEmbeddings} onclick={() => (refreshEmbeddings = !refreshEmbeddings)} />
+                        <span>Refresh embeddings</span>
+                    </label>
+                </div>
+
+                <div class="row">
+                    <label for="out-file">Output filename</label>
+                    <input
+                        type="text"
+                        placeholder="curated_words.txt"
+                        id="out-file"
+                        value={outFile}
+                        disabled={!saveOutput}
+                        oninput={(e) => (outFile = (e.target as HTMLInputElement).value)}
+                    />
+                </div>
+
+                <div class="row">
+                    <button type="submit" class="build-btn" disabled={isBuilding}>
+                        {isBuilding ? 'Building...' : 'Build Dictionary'}
+                    </button>
+                </div>
+            </form>
+
+            {#if buildError}
+                <div class="error">{buildError}</div>
+            {/if}
+
+            {#if buildResultCount !== null}
+                <div class="result">Found {buildResultCount} unique lemmas</div>
+                {#if buildWords.length}
+                    <div class="words-list">
+                        {#each buildWords as w}
+                            <span class="word-chip">{w}</span>
+                        {/each}
+                    </div>
+                {/if}
+            {/if}
+        </div>
 
 		{#if showVoiceSelector}
 			<div class="voice-selector-container">

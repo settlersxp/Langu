@@ -19,7 +19,7 @@ export const GET: RequestHandler = async () => {
 
 // POST to create a new conversation
 export const POST: RequestHandler = async ({ request, locals }) => {
-  const { title, initialMessage } = await request.json();
+  const { title, initialMessage, wordsFile } = await request.json();
   
   if (!title || !initialMessage) {
     return json({ error: 'Title and initial message are required' }, { status: 400 });
@@ -28,6 +28,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const conversation = await prisma.conversation.create({
     data: {
       title,
+      wordsFile: wordsFile || 'B1.txt',
       messages: {
         create: {
           role: 'user',
@@ -47,7 +48,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
   const ollamaMessages: OllamaMessage[] = [
     { 
       role: 'system', 
-      content: await createSystemPrompt(title, initialContext)
+      content: await createSystemPrompt(title, initialContext, conversation.wordsFile)
     },
     { role: 'user', content: initialMessage }
   ];
@@ -56,7 +57,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     const ollamaResponse = await sendChatRequest(ollamaMessages);
     
     // Validate the assistant's response
-    const confidenceLevel = await validatePhrase(ollamaResponse.message.content);
+    const confidenceLevel = await validatePhrase(ollamaResponse.message.content, conversation.wordsFile);
     
     // Save the assistant's response
     const assistantMessage = await prisma.message.create({

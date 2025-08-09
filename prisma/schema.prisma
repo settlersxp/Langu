@@ -32,6 +32,7 @@ model Section {
 model Conversation {
   id          Int       @id @default(autoincrement())
   title       String
+  wordsFile   String    @default("B1.txt")
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
   messages    Message[]

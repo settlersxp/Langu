@@ -51,7 +51,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
   const ollamaMessages: OllamaMessage[] = [
     { 
       role: 'system', 
-      content: await createSystemPrompt(conversation.title, conversationContext)
+      content: await createSystemPrompt(conversation.title, conversationContext, conversation.wordsFile)
     },
     ...conversation.messages.reverse().map(msg => ({  // Reverse to get chronological order
       role: msg.role as 'user' | 'assistant',
@@ -67,7 +67,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
     const ollamaResponse = await sendChatRequest(ollamaMessages);
     
     // Validate the assistant's response
-    const confidenceLevel = await validatePhrase(ollamaResponse.message.content);
+    const confidenceLevel = await validatePhrase(ollamaResponse.message.content, conversation.wordsFile);
     
     // Save the assistant's response
     const assistantMessage = await prisma.message.create({

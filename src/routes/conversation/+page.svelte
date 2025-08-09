@@ -2,6 +2,8 @@
   import { onMount } from 'svelte';
   import MessageList from '$lib/components/MessageList.svelte';
   import MicrophoneButton from '$lib/components/MicrophoneButton.svelte';
+  import { listDictionaries, ensureEmbeddingsLoaded } from '$lib/services/smartWordSelector';
+  import DictionaryPanel from '$lib/components/DictionaryPanel.svelte';
   
   interface Message {
     id: number;
@@ -19,6 +21,7 @@
     id: number;
     title: string;
     systemPrompt: string;
+    wordsFile?: string;
     createdAt: string;
     updatedAt: string;
     messages: Message[];
@@ -29,12 +32,18 @@
   let messages = $state<Message[]>([]);
   let newMessage = $state('');
   let newConversationTitle = $state('');
-  let newConversationInitialMessage = $state('');
+  let newConversationInitialMessage = $state('Hallo! Ich bin Gabi!');
   let isCreatingConversation = $state(false);
+  let newConversationWordsFile = $state('B1.txt');
+  let availableDictionaries = $state<string[]>([]);
+  let embeddingsReady = $state(false);
+  let embeddingsLoading = $state(false);
   let isLoading = $state(false);
   
   onMount(async () => {
     await loadConversations();
+    const dicts = await listDictionaries();
+    availableDictionaries = dicts.map(d => d.filename);
   });
   
   async function loadConversations() {
@@ -55,6 +64,15 @@
       if (response.ok) {
         currentConversation = await response.json();
         messages = currentConversation?.messages || [];
+        // Ensure embeddings for this conversation level are loaded
+        embeddingsReady = false;
+        if (currentConversation?.wordsFile) {
+          embeddingsLoading = true;
+          embeddingsReady = await ensureEmbeddingsLoaded(currentConversation.wordsFile);
+          embeddingsLoading = false;
+        } else {
+          embeddingsReady = true; // use default
+        }
       }
     } catch (error) {
       console.error('Error loading conversation:', error);
@@ -76,9 +94,10 @@
         headers: {
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
+      body: JSON.stringify({
           title: newConversationTitle,
-          initialMessage: newConversationInitialMessage
+          initialMessage: newConversationInitialMessage,
+          wordsFile: newConversationWordsFile
         })
       });
       
@@ -87,6 +106,11 @@
         conversations = [newConversation, ...conversations];
         currentConversation = newConversation;
         messages = newConversation.messages;
+        // Ensure embeddings before user continues
+        embeddingsReady = false;
+        embeddingsLoading = true;
+        embeddingsReady = await ensureEmbeddingsLoaded(newConversation.wordsFile || 'B1.txt');
+        embeddingsLoading = false;
         
         // Reset form
         newConversationTitle = '';
@@ -222,10 +246,28 @@
           <textarea 
             id="initial-message" 
             bind:value={newConversationInitialMessage} 
-            placeholder="Write a short message to start the conversation"
             rows="3"
           ></textarea>
           <small>This helps establish context for the conversation</small>
+        </div>
+
+        <div class="form-group">
+          <label for="words-file">Dictionary file (under /currated_words/german)</label>
+          {#if availableDictionaries.length}
+            <select id="words-file" bind:value={newConversationWordsFile}>
+              {#each availableDictionaries as f}
+                <option value={f}>{f}</option>
+              {/each}
+            </select>
+          {:else}
+            <input 
+              type="text" 
+              id="words-file" 
+              bind:value={newConversationWordsFile} 
+              placeholder="B1.txt"
+            />
+          {/if}
+          <small>Examples: B1.txt, A2.txt, custom.txt</small>
         </div>
         
         <div class="form-actions">
@@ -247,29 +289,39 @@
     {:else if currentConversation}
       <div class="chat-header">
         <h2>{currentConversation.title}</h2>
+        {#if embeddingsLoading}
+          <span class="badge">Loading embeddings…</span>
+        {:else if !embeddingsReady}
+          <span class="badge warn">Embeddings not ready</span>
+        {:else}
+          <span class="badge ok">Embeddings ready</span>
+        {/if}
       </div>
-      
-      <MessageList {messages} {isLoading} />
-      
-      <div class="message-input">
-        <textarea 
-          bind:value={newMessage} 
-          placeholder="Type your message..." 
-          onkeydown={handleKeyDown}
-          disabled={isLoading}
-        ></textarea>
-        <div class="input-controls">
-          <MicrophoneButton 
-            onTranscription={handleTranscription}
-            disabled={isLoading}
-          />
-          <button 
-            onclick={() => sendMessage()} 
-            disabled={!newMessage || isLoading}
-          >
-            Send
-          </button>
+      <div class="content-row">
+        <div class="chat-col">
+          <MessageList {messages} {isLoading} />
+          <div class="message-input">
+            <textarea 
+              bind:value={newMessage} 
+              placeholder="Type your message..." 
+              onkeydown={handleKeyDown}
+              disabled={isLoading || !embeddingsReady}
+            ></textarea>
+            <div class="input-controls">
+              <MicrophoneButton 
+                onTranscription={handleTranscription}
+                disabled={isLoading || !embeddingsReady}
+              />
+              <button 
+                onclick={() => sendMessage()} 
+                disabled={!newMessage || isLoading || !embeddingsReady}
+              >
+                Send
+              </button>
+            </div>
+          </div>
         </div>
+        <DictionaryPanel wordsFile={currentConversation.wordsFile || 'B1.txt'} />
       </div>
     {:else}
       <div class="empty-chat">
@@ -307,6 +359,13 @@
     padding: 1rem;
     overflow: hidden;
   }
+  .content-row {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 1rem;
+    height: calc(100% - 64px);
+  }
+  .chat-col { display: flex; flex-direction: column; overflow: hidden; }
   
   .conversation-list {
     overflow-y: auto;
@@ -481,6 +540,16 @@
     border-radius: 8px;
     cursor: pointer;
   }
+
+  .badge {
+    margin-left: 1rem;
+    padding: 0.2rem 0.5rem;
+    border-radius: 6px;
+    background: #eee;
+    font-size: 0.85rem;
+  }
+  .badge.ok { background: #e6f7ed; color: #217a3c; }
+  .badge.warn { background: #fff4e5; color: #8a4b08; }
   
   .create-btn:disabled {
     background-color: #6c757d;
