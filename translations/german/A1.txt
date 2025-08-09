@@ -1,0 +1,1013 @@
+abend	evening
+abfahren	to depart
+abfahrt	Departure
+abfliegen	take off
+abflug	Departure
+abgeben	to give up
+abholen	pick up
+ableitbar	derivable
+ableitbaren	derivable
+absender	Sender
+achtung	Attention
+adresse	address
+aktiv	active
+aktualisiert	Updated
+alltagskommuni	Everyday Communion
+alphabetisch	Alphabetically
+alt	old
+alte	old
+alter	old
+anbieten	to offer
+anerkennen	to recognize
+anfang	beginning
+anfangen	to begin
+anführen	to lead
+angabe	Statement
+angebot	Offer
+anklicken	Click
+ankommen	to arrive
+ankreuzen	to cross out
+ankunft	Arrival
+anmachen	to make up
+anmelden	to register
+anmeldung	Registration
+anrede	Address
+anruf	call
+anrufbeantworter	Answering machine
+anrufen	to call
+ansage	announcement
+anschluss	annexation
+anspruchsniveau	level of expectation
+antwort	answer
+antwortbog	Answer book
+antworten	to answer
+anzeige	Complaint
+anziehen	to put on
+apartment	Wohnung
+apfel	Apple
+äpfel	apples
+apfelsaft	apple juice
+apotheke	pharmacy
+appetit	appetite
+april	April
+arbeit	work
+arbeiten	to work
+arbeiter	worker
+arbeitsfassung	Work arrangement
+arbeitslos	unemployed
+arbeitsplatz	workplace
+arm	arm
+arzt	doctor
+ärztin	Doctor (female)
+association	Organization
+aufgabe	Task
+aufgebaut	established
+aufgeführt	performed
+aufgenommen	taken
+aufhören	to stop
+auflage	Edition
+auflisten	to list up
+aufstehen	get up
+auftrag	Assignment
+aufzug	Elevator
+auge	eye
+ausbildung	Training
+ausdruck	expression
+ausflug	outing
+ausfüllen	fill out
+ausgabe	issue
+ausgang	exit
+ausgewählt	selected
+auskunft	Information
+ausland	abroad
+ausländer	foreigner
+ausländerin	foreign woman
+ausländisch	foreign
+auslandsvertretung	Overseas Representation
+ausmachen	to turn off
+ausnehmen	to exclude
+aussage	statement
+aussehen	to look like
+aussteigen	to get out or off
+auswahl	selection
+ausweis	identification
+ausziehen	to undress
+auszug	extraction
+auto	car
+autobahn	highway
+automat	Automaton
+automatisch	Automatically
+baby	baby
+bäckerei	Bakery
+bad	Bad
+baden	bath
+bahn	track
+bahnhof	station
+bahnhofstraße	Train Station Street
+bahnsteig	platform
+balkon	balcony
+banane	banana
+bank	bank
+bar	bar
+bauch	stomach
+baum	tree
+beamter	civil servant
+beamtin	beamline
+beantworter	Answerer
+bedeuten	to mean
+bedeutung	meaning
+befinden	to find
+begegnen	to encounter
+beginnen	to start
+beherr	mastered
+bein	leg
+beispiel	example
+beispielsätz	example sentences
+beispielsweise	For example
+bekannte	known
+bekannter	better known
+bekommen	to get or receive
+bekommsen	to get acquainted with
+benutzen	to use
+bereich	Domain
+berghaus	Mountain hut
+beruf	profession
+beruflich	professionally
+beschrieben	described
+besetzen	occupy
+besichtigen	to visit
+bestandteil	component
+bestellen	to order
+besuch	visit
+besuchen	visit
+bett	bed
+bewältigung	mastering
+bewohner	inhabitant
+bezahlen	to pay
+bezeichnen	designate
+bier	beer
+bild	image
+bilden	to form
+bildung	Education
+billig	inexpensive
+birne	pear
+birnen	pears
+bisschen	little bit
+bitte	please
+bitten	asked
+bitter	bitter
+blau	Blue
+bleiben	stay
+bleistift	pencil
+blick	glance
+blume	flower
+bogen	arc
+böse	wicked
+brauchen	need
+brauchsen	need
+breit	wide
+breite	broad
+brief	letter
+briefmark	Postage stamp
+briefmarke	Postage stamp
+bring	bring
+bringen	to bring
+broschüre	brochure
+brot	bread
+brötchen	Muffin
+bruder	brother
+buch	book
+buchladen	bookstore
+buchstabe	letter
+buchstabieren	Spell out
+bundesministerium	Federal Ministry
+bundesrepublik	Federal Republic
+bung	stupid
+büro	office
+bus	Bus
+butter	Butter
+café	coffee shop
+celsius	Centigrade
+cent	cent
+chef	Kitchen chief
+chefin	Boss
+circa	around
+computer	Computer
+credit	Credit
+dame	lady
+danke	thank you
+danken	to thank
+datum	data
+dauern	to last
+denken	think
+deutsch	German
+deutsche	German
+deutscheuropaeuropäer	European
+deutschkurs	German course
+deutschlehrerin	German teacher
+deutschprüfung	German language test
+dezembermonat	December month
+didaktisch	pedagogically
+dienstag	Tuesday
+dienstleistung	Service
+direktor	Director
+disco	Disco
+disko	nightclub
+doktor	Doctor
+dokumentieren	to document
+dom	home
+donnerstag	Thursday
+doppelzimmer	Double room
+dorf	village
+dorthin	there
+draußen	outside
+drück	push
+drucken	print
+drücken	press
+drucker	Printer
+dung	manure
+durchsage	announcement
+durst	thirst
+dusche	shower
+duschen	shower
+ecke	corner
+ehefrau	wife
+ehegattennachzug	Spousal relocation benefit
+ehemann	husband
+eilig	hurriedly
+einfach	simple
+eingang	Entrance
+eingerückt	Indented
+einkaufen	to shop
+einladen	to invite
+einladung	invitation
+einrichtung	installation
+einsteigen	to board
+eintrag	entry
+eintritt	admission
+eintrittskarte	admission ticket
+einzeln	separately
+einzelzimmer	Single room
+elementar	fundamental
+eltern	parents
+empfänger	receiver
+empfehlen	Recommend
+enden	to end
+englisch	English: English
+enthalten	to contain
+entschuldig	apologetic
+entschuldigen	to apologize
+entschuldigung	apology
+erbringtn	rendered
+erfolgen	to occur
+erfüllen	to fulfill
+ergänzen	to supplement
+ergebnis	result
+erklären	Explain
+erlauben	to allow
+ermöglichen	to enable
+erschließbar	Accessible
+erschließen	to unlock or to gain access
+erstmals	for the first time
+erwachsene	adults
+erzählen	to tell
+erziehung	education
+essen	to eat
+euer	your
+euro	Euro
+europäisch	European
+europäischländer	European countries
+europarat	European Parliament
+fähigkeit	Ability
+fahr	drive
+fahren	to drive or ride
+fahrer	driver
+fahrkarte	Ticket
+fahrrad	bicycle
+fährst	drive
+fahrt	journey
+fallen	fallen
+falsch	wrong
+familie	family
+familienname	surname
+familiennamen	family names
+familienstand	Family status
+fangen	to catch or to start
+farbe	color
+fax	Telex
+februar	February
+fehlen	lack
+fehler	mistake
+feierabend	quitting time
+feiern	celebrate
+feiertag	Holiday
+fenster	window
+fernsehen	television
+fertig	finished
+festigung	stabilization
+feuer	fire
+fieber	Fever
+film	movie
+finden	to find
+findest	finds
+finne	Fin
+finnisch	Finnish
+firma	company
+fisch	fish
+flasche	bottle
+fleisch	Meat
+fliegen	to fly
+fliegsen	to flutter
+flughafen	airport
+flugzeug	airplane
+folgen	to follow
+folgend	following
+form	shape
+formular	Form
+foto	photo
+frage	ask
+fragen	ask
+französisch	French
+frau	woman
+frei	free
+freitag	Friday
+freitags	Fridays
+freizeit	leisure time
+fremd	strange
+fremdsprache	Foreign language
+frequenzkriterie	Frequency criterion
+freuen	rejoice
+freund	friend
+freundin	girlfriend
+freundlich	friendly
+frühjahr	spring
+frühling	spring
+frühstück	breakfast
+frühstücken	to have breakfast
+führung	leadership
+fülle	fullness
+fünfundzwanzig	twenty-five
+fuß	foot
+fußball	Soccer
+garten	garden
+gast	guest
+gebären	to bear
+geben	to give
+gebrauchsartikel	Consumer goods
+gebraucht	Used
+geburtsdatum	birth date
+geburtsjahr	birth year
+geburtsort	birthplace
+geburtstag	birthday
+geehrt	respected
+geeignet	suitable
+gefallen	pleased
+gefällen	Please
+gefordert	required
+geh	go
+gehen	go
+gehören	belong
+gelb	Yellow
+geld	money
+gemeinsam	together
+gemeinsamer	joint
+gemüse	vegetables
+gepäck	Luggage
+geradeaus	straight ahead
+gerne	pleased
+geschäft	business
+geschenk	Gift
+geschlecht	sex
+geschrieben	written
+geschwister	Siblings
+gespräch	conversation
+gesprochen	spoken
+gestern	yesterday
+getränk	drink
+gewicht	weight
+gewinnen	to win
+gewohnheit	habit
+gib	give
+glas	glass
+gläser	glasses
+glauben	believe
+gleich	same
+gleis	track
+glück	happiness
+glücklich	happy
+glückwunsch	Congratulations
+gmbh	Limited Liability Company
+grad	step
+gramm	grammar
+gratulieren	Congratulations
+grau	gray
+grill	barbecue
+größe	size
+großelter	grandparent
+großmutter	grandmother
+großvater	grandfather
+grün	green
+grundbaustein	foundation stone
+grundlage	foundation
+grundstock	foundation
+gruppe	group
+gruß	greeting
+grüße	greetings
+gültig	valid
+günstig	affordable
+gut	good
+gute	good
+haar	hair
+hähnche	Hens
+hähnchen	chickens
+halb	half
+halbpension	Half-board
+hälfte	Half
+halle	hall
+halten	to hold
+haltestelle	bus stop
+hand	hand
+handbuch	Manual
+handeln	act
+handy	handy
+häufig	frequent
+haus	house
+hausaufgabe	homework
+hausfrau	housewife
+haushalt	household
+hausmann	Houseman
+hausnummer	House number
+haustür	doorbell
+heimat	homeland
+heiraten	to marry
+heißen	to be called
+helfen	help
+hell	hot
+heran	nearby
+herausgeben	to publish
+herbst	Autumn
+herd	Flock
+herkunft	Origin
+herr	Sir
+herzlich	Warmly
+hilfe	help
+himmelsrichtungender	direction of heaven
+hingegen	On the other hand
+hinten	behind
+hobby	hobby
+hochzeit	wedding
+holen	to fetch or to get
+hör	listen
+hörd	heard
+hören	listen
+hotel	hotel
+hund	dog
+hunger	hunger
+ice	Eis
+idiomatisch	idiomatically
+illustrieren	Illustrate
+information	information
+inter	between
+interesse	interest
+interessent	interested
+interessiert	interested
+intermediary	Mediator
+international	international
+internet	Internet
+inventar	inventory
+inventarliste	Inventory list
+jacke	jacket
+jahreszeit	season
+januar	January
+japaner	Japanese
+jean	Jeans
+jeans	pants
+job	Job
+jugendliche	Youthful
+juli	July
+julid	July
+jung	young
+junge	young
+junid	juvenile
+kaffee	coffee
+kalt	cold
+kannbeschreibung	description
+kantonalen	regional
+kaputt	Broken
+karte	map
+kartoffel	potato
+käse	cheese
+kasse	cash
+kategorie	category
+kaufen	buy
+kaufhaus	department store
+kder	Whoever
+kennen	to know
+kennenlernen	to get to know
+kilo	kilo
+kilometer	kilometer
+kind	child
+kinderbetreuung	Childcare
+kinderbett	Children's bed
+kindergart	preschool
+kindergarten	preschool
+kino	cinema
+kiosk	Booth
+klar	clear
+klasse	cool
+klassenzimmer	classroom
+kleidung	clothing
+klein	small
+klima	climate
+kochen	cook
+koffer	suitcase
+kollege	colleague
+kollegin	colleague
+komm	come
+kommen	to come
+kommsen	to come
+kommst	are you coming
+kommunikation	communication
+kompendie	Compendium
+komposita	composite
+konferenz	Conference
+konto	Account
+kopf	head
+kosten	cost
+krank	ill
+kreuzen	to cross
+kriegen	get
+kuche	kitchen
+küche	kitchen
+kuchen	cake
+kugelschreiber	ballpoint pen
+kühlschrank	Refrigerator
+kulturell	culturally
+kultusminister	Minister of Culture
+kümmern	worry about
+kunde	customer
+kundin	daughter
+kurs	Course
+kurstag	day of the week
+kurz	short
+lachen	laugh
+laden	load
+land	country
+ländernam	country name
+langsam	slowly
+lassen	to leave
+lastkraftwag	Last truck
+laufen	to run
+laut	loudly
+leben	to live
+lebensmittel	foodstuff
+ledig	Single
+legen	to lay or put
+lehren	teach
+lehrer	teacher
+lehrerin	Teacher
+lehrmaterial	teaching materials
+leid	Pain
+leise	quietly
+lektüre	reading
+lernen	to learn
+lernende	learning
+lernzielbestimmung	goal setting
+lesen	to read
+lesetext	reading text
+letzter	last
+leute	people
+level	Ebenen
+lexikalisch	Lexical
+licht	light
+liebe	love
+lieben	to love
+lieblingsfilm	favorite movie
+lieblingsgetränk	favorite drink
+lieblingslied	favorite song
+lied	song
+liegen	to lie
+liegend	Lying
+linker	left
+links	left
+liste	list
+liter	literary
+literatur	literature
+lkw	Truck
+lokal	local
+lösung	solution
+lustig	funny
+machen	to make
+mädchen	girl
+mahlzeit	snack or meal time
+mai	May
+mal	once
+mann	man
+männlich	masculine
+märz	March
+maschine	machine
+medikament	Medicine
+meer	sea
+meistens	usually
+mensch	human
+messeplatz	exhibition space
+meter	meter
+mexikaner	Mexican
+mexikanerin	Mexican woman
+mexikanisch	Mexican
+miete	rent
+mieten	rent
+milch	milk
+milliarde	billion
+million	million
+minute	Minute
+mitbringen	to bring along
+mitkommen	to come along
+mitmachen	to participate
+mitnehmen	to take along
+mittagder	afternoon
+mitte	middle
+mittwoch	Wednesday
+mitzählen	to be counted with
+mmachen	to make
+möbel	Furniture
+möchten	would like
+möchtest	would you like
+modern	modern
+moment	Moment
+monat	month
+monatsnamen	month names
+montag	Monday
+morgens	in the morning
+müde	tired
+mund	mouth
+museum	museum
+mutter	mumble
+nächsten	nearest
+nächster	nearest
+nacht	night
+nachweis	detectable
+nahrungsmittel	Foodstuff
+name	name
+nationalität	Nationality
+nebeneintrag	side note
+nebeneinträg	side effects
+nehmen	take
+nennen	to mention
+neu	new
+neuankömmlinge	Newcomers
+neunzehnhundertneunundneunzig	nineteen ninety-seven
+nikativ	Negative
+nimm	take
+niveau	level
+niveaustufe	water level
+nom	Name
+norddeutsch	North German
+norden	to order
+normal	normal
+notwendig	necessary
+november	November
+nummer	number
+obst	obstacle
+öffentlich	publicly
+öffne	Open
+öffnen	Open
+oktober	October
+oma	grandmother
+opa	Grandfather
+ordnung	Order
+ort	place
+osten	East
+österreichisch	Austrian
+papier	paper
+park	park
+partner	partner
+partnerin	colleague
+party	party
+pass	pass
+passiv	passive
+pause	Pause
+persönlich	personally
+pflanze	plant
+pfund	pound
+plan	plan
+platz	place
+pluralforme	plural form
+polizei	Police
+polizeierziehung	Police education
+pommes	Fries
+post	mail
+postleitzahl	zip code
+praktikum	practicum
+praxis	practice
+preis	price
+presse	press
+privat	private
+problem	problem
+profil	Profile
+prospekt	brochure
+prozent	percent
+prüfung	examination
+prüfungsverfahren	examination procedure
+prüfungsziele	Examination goals
+publikation	Publication
+pünktlich	punctual
+quadratmeter	Square meter
+rad	wheel
+radio	radio
+rahmen	frame
+rat	mouse
+rauchen	to smoke
+raum	space
+raus	out
+rausch	revel
+rechnung	account
+rechts	right
+referenz	Reference
+referenzrahm	Reference frame
+referenzrahmen	Reference framework
+regel	rule
+regen	rain
+regnen	rain
+reis	rice
+reise	travel
+reisebüro	Travel Agency
+reiseführer	Travel guide
+reisen	travel
+relevant	relevant
+reparatur	repair
+reparieren	to repair
+restaurant	Restaurant
+revidiert	Revised
+rezeption	reception
+richtungen	Directions
+riechen	to smell
+rot	red
+ruf	Call
+rufen	to call
+ruhig	calmly
+russisch	Russian
+saft	juice
+sag	say
+sagen	to say
+salat	Salad
+salz	salt
+samstag	Saturday
+samstags	Saturdays
+satz	sentence
+sch	short
+schalter	switch
+scheiden	to separate
+scheinen	appear
+schen	gift
+schicken	Send
+schild	shield
+schinken	Ham
+schinkenbrot	Ham sandwich
+schlafe	sleep
+schlafen	sleep
+schlafzimmer	bedroom
+schlecht	bad
+schließen	Close
+schlüssel	key
+schmecken	to taste
+schmeckt	tastes
+schnell	fast
+schön	beautiful
+schöne	beautiful
+schrank	Cabinet
+schreiben	write
+schreibst	write
+schuh	shoe
+schule	school
+schüler	student
+schülerin	Student
+schwarz	black
+schweizerisch	Swiss
+schwer	difficult
+schwester	sister
+schwimmbad	swimming pool
+schwimmen	to swim
+sechsstufig	six-step
+see	see
+sehen	see
+sehenswürdigkeit	Worthiness
+seite	side
+sekunde	second
+selbstständig	independent
+september	September
+sinn	meaning
+sinntragend	meaningful
+sitzen	to sit
+sofa	couch
+sofort	immediately
+sohn	son
+sommer	summer
+sommerder	Summer weather
+sonne	sun
+sonntag	Sunday
+spanier	Spaniard
+spät	late
+speise	meal
+speisekarte	Menu
+spiel	game
+spielen	play
+sport	Sport
+sportschuhe	Athletic shoes
+sportverein	Sports Club
+sprachbeherrschung	Language mastery
+sprache	Language
+sprachkompetenz	Language competence
+sprachkurs	language course
+sprachniveau	Language level
+sprachprüfung	language test
+sprechen	to speak
+sprichen	Speak
+staatsangehörigkeit	Nationality
+stadt	city
+stadtplan	city plan
+ständig	constantly
+starnberger	Starberger
+start	Start
+stehen	stand
+steig	rise
+stelle	position
+stellen	to set or put
+sterben	to die
+stimmen	agree
+stock	Share
+straße	Street
+straßenbahn	tram
+stück	piece
+student	Student
+studentin	female student
+studieren	to study
+studium	study
+stufe	step
+stunde	hour
+suchen	search
+süden	to sun
+supermarkt	supermarket
+system	System
+tageszeit	daytime
+tanzen	to dance
+tasche	pocket
+tasse	cup
+taxi	Taxi
+technisch	technically
+tee	Tea
+telc	Test
+telefon	telephone
+telefonanschluss	phone connection
+telefonieren	to telephone
+telekommunikation	Telecommunication
+termin	appointment
+test	test
+teuer	Expensive
+text	text
+thema	theme
+themenbereich	Field of study
+ticket	Ticket
+tier	animal
+tion	Nation
+tisch	table
+tochter	daughter
+toilette	bathroom
+tomat	Tomato
+tomatensaft	tomato juice
+tot	dead
+treffen	to meet
+treiben	to do/to go around/to be busy
+treppe	Staircase
+trim	Prune
+trinken	to drink
+tschüss	See you later!
+tun	to do
+tür	door
+türke	Turkish
+türkin	Tartar
+türkisch	Turkish
+tut	does
+überblick	overview
+übernachten	to spend the night
+übernachtung	overnight stay
+überweisen	Transfer
+übung	exercise
+uhrzeit	time
+umwelt	environment
+umzieh	relocate
+unerlässlich	indispensable
+unten	below
+unterhaltung	entertainment
+unterkunft	Accommodation
+unterricht	teach
+unterscheiden	to distinguish
+unterschreiben	Sign
+unterschrift	Signature
+unveröffentlicht	unpublished
+urlaub	Vacation
+urlaubfreizeit	Holiday time
+urteilen	Judge
+vater	father
+verbieten	Prohibit
+verdienen	earn
+verein	association
+vereinigt	united
+verfügung	disposition
+verheiraten	to marry
+verkaufen	to sell
+verkäufer	Salesperson
+verkäuferin	Saleswoman
+verkehr	traffic
+vermieten	to rent out
+vermieter	Tenant
+verständnis	understanding
+verstehen	to understand
+verwandte	related
+verwendung	Usage
+viertel	quarter
+volkshochschulverband	National Adult Education Association
+vollpension	full pension
+vorliegend	available
+vornam	forename
+vorsicht	caution
+vorstellen	to imagine
+vorwahl	area code
+vorwort	Foreword
+währung	currency
+wandern	to wander or hike
+warten	wait
+waschen	to wash
+wäschen	to wash
+waschmaschine	washing machine
+wasser	water
+waystage	Checkpoint
+weg	away
+weh	pain
+weiblich	feminine
+wein	wine
+weißbrot	white bread
+weißen	whiten
+welt	world
+westen	to set
+wetter	weather
+wetterreisen	travel weather
+wichtig	important
+wiederholen	to repeat
+wiederhör	echoes back
+wiederhören	to hear again
+wiedersehe	Reunite with
+wiedersehen	Goodbye
+willkommen	Welcome
+wind	wind
+winterjahr	Winter year
+wissen	to know
+wissenschaft	science
+woche	week
+wochenende	weekend
+wochenendewoche	Weekend week
+wochentag	weekday
+wochentage	Weekdays
+woher	wherefrom
+wohin	where
+wohnen	to live
+wohnst	lives
+wohnung	apartment
+wohnungswechselwohne	Housing allowance change
+wort	word
+wortbildung	word formation
+wörterbuch	dictionary
+wortgruppe	phrase group
+wortgruppenli	word groups
+wortgruppenliste	word group list
+wortlist	word list
+wortliste	word list
+wortschatz	Vocabulary
+wortschatzlist	Vocabulary list
+wunderbar	Wonderful
+zahl	number
+zahlen	to count or pay
+zehnelf	tenfold
+zeigen	show
+zeitangaben	Time indications
+zeitung	newspaper
+zentimeter	centimeter
+zentrale	central
+zertifikat	Certificate
+zieh	pull
+ziehen	to pull or draw
+zigarette	cigarette
+zimmer	room
+zimmerschlüssel	house key
+zoll	duty
+zufrieden	Satisfied
+zug	train
+zugrunde	underneath
+zuordnen	to assign
+zurzeit	currently
+zusammenarbeit	Collaboration
+zusammensetzung	Composition
+zusammenstellen	to assemble
+zusammenstellung	Compilation
+zusätzlich	in addition
+zwölfter	twelfth

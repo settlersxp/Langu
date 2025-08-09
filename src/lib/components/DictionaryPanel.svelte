@@ -2,7 +2,6 @@
   const { wordsFile = 'B1.txt' } = $props<{ wordsFile?: string }>();
   let allWords: string[] = $state([]);
   let query: string = $state('');
-  let filtered: string[] = $state([]);
   let isLoading = $state(false);
   let error: string | null = $state(null);
   let translations = $state<Record<string, string>>({});
@@ -16,7 +15,6 @@
       if (!resp.ok) throw new Error(data?.error || 'Failed to load dictionary');
       allWords = Array.isArray(data?.words) ? data.words : [];
       translations = (data?.translations && typeof data.translations === 'object') ? data.translations as Record<string, string> : {};
-      filterWords();
     } catch (e: any) {
       error = e?.message || String(e);
     } finally {
@@ -24,20 +22,20 @@
     }
   }
 
-  function filterWords() {
+  const filtered = $derived.by(() => {
     const q = query.trim().toLowerCase();
-    filtered = q ? allWords.filter((w) => w.includes(q)) : allWords;
-  }
+    return q ? allWords.filter((w) => w.toLowerCase().includes(q)) : allWords;
+  });
 
-  $effect(() => { loadWords(); });
-  $effect(() => { filterWords(); });
+  // Only reload when wordsFile changes
+  $effect(() => { wordsFile; loadWords(); });
 
   async function translate(word: string) {
     try {
       const resp = await fetch('/api/dictionary', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ word })
+        body: JSON.stringify({ word, wordsFile })
       });
       const data = await resp.json();
       if (!resp.ok) throw new Error(data?.error || 'Failed to translate');
@@ -56,10 +54,30 @@
   }
 
   async function translateAll() {
-    // naive sequential to avoid overwhelming backend
-    for (const w of filtered) {
-      if (!translations[w]) {
+    try {
+      // First try to load existing translations from cache file
+      const check = await fetch(`/api/dictionary?wordsFile=${encodeURIComponent(wordsFile)}`);
+      if (check.ok) {
+        const data = await check.json();
+        if (data?.translations && typeof data.translations === 'object') {
+          translations = { ...translations, ...(data.translations as Record<string, string>) };
+        }
+      }
+
+      // Determine which words still need translation
+      const missing = filtered.filter((w) => !translations[w] || translations[w] === '');
+      if (missing.length === 0) return;
+
+      // Sequentially translate remaining to avoid overloading the model
+      for (const w of missing) {
         await ensureTranslation(w);
+      }
+    } catch {
+      // fallback: try to translate sequentially
+      for (const w of filtered) {
+        if (!translations[w]) {
+          await ensureTranslation(w);
+        }
       }
     }
   }
@@ -81,7 +99,7 @@
     <div class="error">{error}</div>
   {:else}
     <div class="list">
-      {#each filtered as w}
+      {#each filtered as w (w)}
         <button class="row" type="button" onclick={() => ensureTranslation(w)}>
           <span class="word">{w}</span>
           <span class="translation">{translations[w] ?? ''}</span>
@@ -129,7 +147,12 @@
     cursor: pointer;
   }
   .meta { color: #666; font-size: 0.9rem; }
-  .list { overflow-y: auto; padding: 0.25rem 0.5rem; height: 100%; }
+  .list {
+    overflow-y: auto;
+    padding: 0.25rem 0.5rem;
+    flex: 1;
+    min-height: 0;
+  }
   .row {
     display: grid;
     grid-template-columns: 1fr 1fr;

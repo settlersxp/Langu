@@ -21,8 +21,8 @@ export const POST: RequestHandler = async ({ request, locals }) => {
       ? `${voiceNameParts[0]}-${voiceNameParts[1]}` 
       : 'en-US';
     
-    // Prepare the request
-    const request = {
+    // Prepare the TTS request (avoid shadowing the handler 'request')
+    const ttsRequest = {
       input: { text },
       voice: {
         languageCode,
@@ -32,7 +32,7 @@ export const POST: RequestHandler = async ({ request, locals }) => {
     };
     
     // Synthesize speech
-    const [response] = await locals.ttsClient.synthesizeSpeech(request);
+    const [response] = await locals.ttsClient.synthesizeSpeech(ttsRequest);
     
     // Create response with audio content
     return new Response(response.audioContent, {

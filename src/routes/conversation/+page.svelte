@@ -3,7 +3,7 @@
   import MessageList from '$lib/components/MessageList.svelte';
   import MicrophoneButton from '$lib/components/MicrophoneButton.svelte';
   import { listDictionaries, ensureEmbeddingsLoaded } from '$lib/services/smartWordSelector';
-  import DictionaryPanel from '$lib/components/DictionaryPanel.svelte';
+  import ConversationTools from '$lib/components/ConversationTools.svelte';
   
   interface Message {
     id: number;
@@ -321,7 +321,7 @@
             </div>
           </div>
         </div>
-        <DictionaryPanel wordsFile={currentConversation.wordsFile || 'B1.txt'} />
+        <ConversationTools wordsFile={currentConversation.wordsFile || 'B1.txt'} />
       </div>
     {:else}
       <div class="empty-chat">
