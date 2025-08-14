@@ -1,6 +1,7 @@
 <script lang="ts">
   import DictionaryPanel from '$lib/components/DictionaryPanel.svelte';
   import TranslationAssistent from '$lib/components/TranslationAssistent.svelte';
+  import SpellcheckAssistent from '$lib/components/SpellcheckAssistent.svelte';
 
   interface ToolConfig {
     id: string;
@@ -9,11 +10,12 @@
     lastOpen?: boolean; // Track previous open state
   }
 
-  const { wordsFile = 'B1.txt' } = $props<{ wordsFile?: string }>();
+  const { wordsFile = 'B1.txt', messageText = '' } = $props<{ wordsFile?: string; messageText?: string }>();
 
   let tools = $state<ToolConfig[]>([
     { id: 'dictionary', title: 'Dictionary', open: true, lastOpen: true },
     { id: 'translation-assistent', title: 'TranslationAssistent', open: false, lastOpen: false },
+    { id: 'spellcheck-assistent', title: 'SpellcheckAssistent', open: false, lastOpen: false },
   ]);
 
   function toggle(toolId: string) {
@@ -40,6 +42,8 @@
             <DictionaryPanel wordsFile={wordsFile} />
           {:else if tool.id === 'translation-assistent'}
             <TranslationAssistent wordsFile={wordsFile} />
+          {:else if tool.id === 'spellcheck-assistent'}
+            <SpellcheckAssistent messageText={messageText} />
           {/if}
         </div>
       {/if}

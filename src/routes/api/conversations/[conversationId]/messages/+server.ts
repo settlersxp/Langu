@@ -15,7 +15,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
     return json({ error: 'Message content is required' }, { status: 400 });
   }
 
-  // Get the conversation to retrieve system prompt and only the last 2 messages
+  // Get the conversation to retrieve system prompt and only the last 4 messages
   const conversation = await prisma.conversation.findUnique({
     where: {
       id: parseInt(conversationId)
@@ -25,7 +25,7 @@ export const POST: RequestHandler = async ({ request, params, locals }) => {
         orderBy: {
           createdAt: 'desc'
         },
-        take: 4  // Only take the last 2 messages
+        take: 4  // Only take the last 4 messages
       }
     }
   });

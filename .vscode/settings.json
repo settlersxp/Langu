@@ -6,5 +6,6 @@
     ],
     "python.analysis.extraPaths": [
         "${workspaceFolder}/pyBackend/.venv/bin/activate"
-    ]
+    ],
+    "python.analysis.autoImportCompletions": true
 }

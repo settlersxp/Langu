@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import { OLLAMA_API_URL, CHAT_MODEL_NAME } from '$env/static/private';
+import { sendGenerateRequest } from '$lib/services/llm.js';
 
 function resolveWordsPath(wordsFile: string): string {
   const base = path.resolve('currated_words/german');
@@ -78,29 +78,17 @@ export const POST: RequestHandler = async ({ request }) => {
       return json({ word, translation: existing[word] });
     }
 
-    // Translate the word
+    // Translate the word using the LLM abstraction
     const prompt = `Translate the following German word to English. Provide only the translation, no extra text.\n\nGerman: ${word}\n\nEnglish:`;
-    const body = {
-      model: CHAT_MODEL_NAME,
+    
+    const result = await sendGenerateRequest({
+      model: '', // Will use default model
       prompt,
       stream: false,
       options: { temperature: 0.1 }
-    }
-    const method = 'POST';
-    const headers = { 'Content-Type': 'application/json' };
-    const bodyString = JSON.stringify(body);
-    // console.log('CURL version: ', `curl -X ${method} ${OLLAMA_API_URL}/api/generate -H "${headers}" -d '${bodyString}'`);
-
-    const ollamaResp = await fetch(`${OLLAMA_API_URL}/api/generate`, {
-      method: method,
-      headers,
-      body: bodyString
     });
-    if (!ollamaResp.ok) {
-      return json({ error: 'Translation failed' }, { status: 502 });
-    }
-    const data = await ollamaResp.json();
-    const translation = (data?.response || '').trim();
+    
+    const translation = result.response;
     // Persist in cache
     existing = readTranslations(wordsFile);
     existing[word] = translation;

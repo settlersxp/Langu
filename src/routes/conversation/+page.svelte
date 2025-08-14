@@ -321,7 +321,7 @@
             </div>
           </div>
         </div>
-        <ConversationTools wordsFile={currentConversation.wordsFile || 'B1.txt'} />
+        <ConversationTools wordsFile={currentConversation.wordsFile || 'B1.txt'} messageText={newMessage} />
       </div>
     {:else}
       <div class="empty-chat">
