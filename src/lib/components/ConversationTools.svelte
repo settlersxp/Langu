@@ -6,23 +6,30 @@
     id: string;
     title: string;
     open: boolean;
+    lastOpen?: boolean; // Track previous open state
   }
 
   const { wordsFile = 'B1.txt' } = $props<{ wordsFile?: string }>();
 
   let tools = $state<ToolConfig[]>([
-    { id: 'dictionary', title: 'Dictionary', open: true },
-    { id: 'translation-assistent', title: 'TranslationAssistent', open: false },
+    { id: 'dictionary', title: 'Dictionary', open: true, lastOpen: true },
+    { id: 'translation-assistent', title: 'TranslationAssistent', open: false, lastOpen: false },
   ]);
 
   function toggle(toolId: string) {
-    tools = tools.map((t) => (t.id === toolId ? { ...t, open: !t.open } : t));
+    tools = tools.map((t) => {
+      if (t.id === toolId) {
+        const newOpen = !t.open;
+        return { ...t, open: newOpen, lastOpen: t.open ? true : t.lastOpen };
+      }
+      return t;
+    });
   }
 </script>
 
 <aside class="tools">
   {#each tools as tool (tool.id)}
-    <section class="tool">
+    <section class="tool" class:open={tool.open}>
       <button class="tool-header" type="button" aria-expanded={tool.open} onclick={() => toggle(tool.id)}>
         <span class="title">{tool.title}</span>
         <span class="chev" aria-hidden="true">{tool.open ? '▾' : '▸'}</span>
@@ -52,7 +59,19 @@
     background: #fff;
     overflow: hidden;
   }
-  .tool { display: flex; flex-direction: column; }
+  .tool { 
+    display: flex; 
+    flex-direction: column; 
+    min-height: 0;
+  }
+  
+  .tool.open {
+    flex: 1; /* Only expanded tools take up flex space */
+  }
+  
+  .tool:not(.open) {
+    flex: 0 0 auto; /* Collapsed tools take minimal space */
+  }
   .tool-header {
     display: flex;
     justify-content: space-between;
@@ -69,6 +88,8 @@
     flex: 1;
     min-height: 0; /* allow children to scroll */
     overflow: hidden;
+    display: flex;
+    flex-direction: column;
   }
   /* Make inner panels use the available height */
   .tool-body :global(.panel) {
