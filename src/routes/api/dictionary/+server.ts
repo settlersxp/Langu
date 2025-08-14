@@ -2,7 +2,7 @@ import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
 import fs from 'fs';
 import path from 'path';
-import { OLLAMA_API_URL } from '$env/static/private';
+import { OLLAMA_API_URL, CHAT_MODEL_NAME } from '$env/static/private';
 
 function resolveWordsPath(wordsFile: string): string {
   const base = path.resolve('currated_words/german');
@@ -63,15 +63,38 @@ export const GET: RequestHandler = async ({ url }) => {
 
 export const POST: RequestHandler = async ({ request }) => {
   try {
-    const { word, wordsFile = 'B1.txt' } = await request.json();
+    const { word, wordsFile } = await request.json();
+    if (!wordsFile) {
+      // Create the empty file
+      fs.writeFileSync(resolveWordsPath(wordsFile), '');
+    }
     if (!word || typeof word !== 'string') {
       return json({ error: 'word is required' }, { status: 400 });
     }
+
+    // If the word is already in the file, return the translation
+    let existing = readTranslations(wordsFile);
+    if (existing[word]) {
+      return json({ word, translation: existing[word] });
+    }
+
+    // Translate the word
     const prompt = `Translate the following German word to English. Provide only the translation, no extra text.\n\nGerman: ${word}\n\nEnglish:`;
+    const body = {
+      model: CHAT_MODEL_NAME,
+      prompt,
+      stream: false,
+      options: { temperature: 0.1 }
+    }
+    const method = 'POST';
+    const headers = { 'Content-Type': 'application/json' };
+    const bodyString = JSON.stringify(body);
+    // console.log('CURL version: ', `curl -X ${method} ${OLLAMA_API_URL}/api/generate -H "${headers}" -d '${bodyString}'`);
+
     const ollamaResp = await fetch(`${OLLAMA_API_URL}/api/generate`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ model: 'llama3', prompt, stream: false, options: { temperature: 0.1 } })
+      method: method,
+      headers,
+      body: bodyString
     });
     if (!ollamaResp.ok) {
       return json({ error: 'Translation failed' }, { status: 502 });
@@ -79,7 +102,7 @@ export const POST: RequestHandler = async ({ request }) => {
     const data = await ollamaResp.json();
     const translation = (data?.response || '').trim();
     // Persist in cache
-    const existing = readTranslations(wordsFile);
+    existing = readTranslations(wordsFile);
     existing[word] = translation;
     writeTranslations(wordsFile, existing);
     return json({ word, translation });

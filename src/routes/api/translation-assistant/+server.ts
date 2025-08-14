@@ -1,6 +1,6 @@
 import type { RequestHandler } from './$types';
 import { json } from '@sveltejs/kit';
-import { OLLAMA_API_URL, WORD_SELECTOR_API_URL } from '$env/static/private';
+import { OLLAMA_API_URL, WORD_SELECTOR_API_URL, CHAT_MODEL_NAME } from '$env/static/private';
 
 interface Payload {
   mode: 'translate' | 'adapt';
@@ -10,6 +10,10 @@ interface Payload {
 }
 
 export const POST: RequestHandler = async ({ request, fetch }) => {
+  const url = `${OLLAMA_API_URL}/api/generate`;
+  const method = 'POST';
+  const headers = { 'Content-Type': 'application/json' };
+
   try {
     const { mode, text, wordsFile, relevantWords }: Payload = await request.json();
     if (!mode || !text) return json({ error: 'mode and text are required' }, { status: 400 });
@@ -17,12 +21,27 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
     let output = '';
     if (mode === 'translate') {
       const prompt = `Translate the following English text to German. Use simple A2/B1 German. Output only the German translation, no extra text.\n\nEnglish:\n${text}\n\nGerman:`;
-      const resp = await fetch(`${OLLAMA_API_URL}/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'llama3', prompt, stream: false, options: { temperature: 0.2 } })
+
+      const body = {
+        model: CHAT_MODEL_NAME,
+        prompt,
+        stream: false,
+        options: { temperature: 0.2 }
+      }
+
+      const bodyString = JSON.stringify(body);
+      // console.log('CURL version: ', `curl -X ${method} ${url} -H "${headers}" -d '${bodyString}'`);
+
+      const resp = await fetch(url, {
+        method: method,
+        headers,
+        body: bodyString
       });
-      if (!resp.ok) return json({ error: 'Translation failed' }, { status: 502 });
+      if (!resp.ok){
+        console.log('Translation failed with: ', resp.status);
+        console.log('Translation failed with: ', await resp.text());
+        return json({ error: 'Translation failed' }, { status: 502 });
+      } 
       const data = await resp.json();
       output = (data?.response || '').trim();
     } else if (mode === 'adapt') {
@@ -43,12 +62,25 @@ export const POST: RequestHandler = async ({ request, fetch }) => {
       }
       const list = words && words.length ? words.join(', ') : '';
       const prompt = `Rewrite the following German sentence using mainly the allowed vocabulary list. Keep the original meaning, make it simpler (A2/B1 level). Output only the rewritten German sentence.\n\nAllowed vocabulary list:\n${list}\n\nOriginal German:\n${text}\n\nRewritten German:`;
-      const resp = await fetch(`${OLLAMA_API_URL}/api/generate`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ model: 'llama3', prompt, stream: false, options: { temperature: 0.2 } })
+      const body = {
+        model: CHAT_MODEL_NAME,
+        prompt,
+        stream: false,
+        options: { temperature: 0.2 }
+      }
+
+      const bodyString = JSON.stringify(body);
+      // console.log('CURL version: ', `curl -X ${method} ${OLLAMA_API_URL}/api/generate -H "${headers}" -d '${bodyString}'`);
+
+      const resp = await fetch(url, {
+        method: method,
+        headers,
+        body: bodyString
       });
-      if (!resp.ok) return json({ error: 'Adaptation failed' }, { status: 502 });
+      if (!resp.ok) {
+        console.log('Adaptation failed with: ', await resp.json());
+        return json({ error: 'Adaptation failed' }, { status: 502 });
+      }
       const data = await resp.json();
       output = (data?.response || '').trim();
     } else {

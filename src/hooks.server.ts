@@ -4,7 +4,6 @@ import { redirect, type Handle } from '@sveltejs/kit';
 import { building } from '$app/environment';
 import { GOOGLE_APPLICATION_CREDENTIALS } from '$env/static/private';
 import fs from 'fs';
-import path from 'path';
 import type { Voice } from './lib/models/language';
 
 // Initialize the Text-to-Speech client
@@ -15,16 +14,6 @@ let curatedWords: string[] = [];
 
 // Only initialize when not building
 if (!building) {
-  try {
-    // Load curated words from file
-    const curatedWordsPath = path.resolve('./curated_words.txt');
-    const curatedWordsContent = fs.readFileSync(curatedWordsPath, 'utf8');
-    curatedWords = curatedWordsContent.split('\n').filter(word => word.trim() !== '');
-    console.log(`Loaded ${curatedWords.length} curated words`);
-  } catch (error) {
-    console.error('Failed to load curated words:', error);
-  }
-
   try {
     // This will use application default credentials or the GOOGLE_APPLICATION_CREDENTIALS env variable
     // read the file from the path where GOOGLE_APPLICATION_CREDENTIALS is set

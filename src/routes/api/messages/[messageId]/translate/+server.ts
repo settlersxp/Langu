@@ -1,7 +1,7 @@
 import { json } from '@sveltejs/kit';
 import type { RequestHandler } from './$types';
 import { PrismaClient } from '@prisma/client';
-import { OLLAMA_API_URL } from '$env/static/private';
+import { OLLAMA_API_URL,CHAT_MODEL_NAME } from '$env/static/private';
 
 const prisma = new PrismaClient();
 
@@ -28,7 +28,7 @@ export const POST: RequestHandler = async ({ params }) => {
   try {
     // Create translation request to Ollama with minimal temperature
     const translationRequest = {
-      model: 'llama3',
+      model: CHAT_MODEL_NAME,
       prompt: `Translate the following German text to English. Provide only the translation, no explanations or additional text:
 
 German: ${message.content}

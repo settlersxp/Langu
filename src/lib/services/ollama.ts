@@ -4,7 +4,7 @@
 
 // Server-side: use server-only word selector (private env allowed)
 import { getRelevantWords } from './smartWordSelector.server.js';
-import { OLLAMA_API_URL } from '$env/static/private';
+import { OLLAMA_API_URL, CHAT_MODEL_NAME } from '$env/static/private';
 
 export interface OllamaMessage {
   role: 'system' | 'user' | 'assistant';
@@ -71,7 +71,7 @@ export async function sendChatRequest(messages: OllamaMessage[]): Promise<Ollama
   const prompt = formatLlamaPrompt(messages);
   
   const body = {
-    model: 'llama3', // Using Llama 3 model
+    model: CHAT_MODEL_NAME, // Using Llama 3 model
     prompt,
     stream: false
   };
